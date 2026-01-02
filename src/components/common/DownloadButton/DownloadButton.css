@@ -1,0 +1,29 @@
+.download-button {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: var(--color-light);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--color-gray-300);
+}
+
+.download-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-weight: 600;
+  color: var(--color-dark);
+  font-size: 1.125rem;
+}
+
+.download-header svg {
+  color: var(--color-primary);
+  font-size: 1.25rem;
+}
+
+.download-options {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
