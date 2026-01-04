@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { HashRouter, Routes, Route } from 'react-router-dom'
 import Header from './components/Header'
 import Books from './pages/Books'
 import BookDetail from './pages/BookDetail'
@@ -8,7 +8,7 @@ import Login from './pages/Login'
 function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50">
-      <BrowserRouter>
+      <HashRouter>
         <Header />
         <Routes>
           <Route path="/" element={<Books />} />
@@ -17,7 +17,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="*" element={<Books />} />
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
     </div>
   )
 }
