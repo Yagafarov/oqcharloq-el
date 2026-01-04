@@ -58,11 +58,11 @@ function BookCard({ book, delay = 0 }) {
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/40 to-purple-50/20 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-br from-indigo-50/40 to-purple-50/20 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none" />
 
       {/* 🖼️ RASM - Cover */}
       <div className="relative h-80 flex items-center justify-center p-6">
-        <div className="relative w-44 h-60 bg-gradient-to-br from-white/90 to-indigo-50/60 rounded-2xl shadow-2xl border-4 border-white/95 overflow-hidden ring-1 ring-transparent group-hover:ring-indigo-200/60 transition-all duration-700 group-hover:scale-105 hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)]">
+        <div className="relative w-44 h-60 bg-linear-to-br from-white/90 to-indigo-50/60 rounded-2xl shadow-2xl border-4 border-white/95 overflow-hidden ring-1 ring-transparent group-hover:ring-indigo-200/60 transition-all duration-700 group-hover:scale-105 hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)]">
           <img 
             src={getImageUrl(book.image_url)} 
             alt={book.title}
@@ -75,7 +75,7 @@ function BookCard({ book, delay = 0 }) {
       {/* 📝 CONTENT - 3 TA ASOSIY */}
       <div className="relative p-6 pb-16">
         {/* 1️⃣ TIP (Kategoriya) */}
-        <div className="inline-flex items-center gap-2 mb-4 px-3 py-2 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 text-xs font-bold rounded-xl border border-indigo-200/60 uppercase tracking-wide">
+        <div className="inline-flex items-center gap-2 mb-4 px-3 py-2 bg-linear-to-r from-indigo-100 to-purple-100 text-indigo-800 text-xs font-bold rounded-xl border border-indigo-200/60 uppercase tracking-wide">
           <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full" />
           {book.category}
         </div>
@@ -87,7 +87,7 @@ function BookCard({ book, delay = 0 }) {
 
         {/* 3️⃣ MUALLIF */}
         <div className="flex items-center gap-2 mb-8 pb-4 border-b border-gray-100/60">
-          <div className="w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full" />
+          <div className="w-2 h-2 bg-linear-to-r from-indigo-500 to-purple-500 rounded-full" />
           <span className="text-lg font-bold text-indigo-800 tracking-wide">{book.author}</span>
         </div>
 
@@ -116,7 +116,7 @@ function BookCard({ book, delay = 0 }) {
               <span className="text-sm font-bold text-gray-900">{rating}</span>
             </div>
             <button 
-              className={`like-btn p-2.5 rounded-lg border transition-all flex items-center justify-center group/like min-w-[40px] ${
+              className={`like-btn p-2.5 rounded-lg border transition-all flex items-center justify-center group/like min-w-10 ${
                 isLiked 
                   ? 'bg-rose-500/90 text-white border-rose-200 shadow-md scale-105' 
                   : 'bg-white/80 hover:bg-gray-50 text-gray-700 shadow-sm'
@@ -130,7 +130,7 @@ function BookCard({ book, delay = 0 }) {
       </div>
 
       {/* Bottom gradient */}
-      <div className="absolute bottom-0 left-0 right-0 h-20 pointer-events-none bg-gradient-to-t from-white/100 via-white/95 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-20 pointer-events-none bg-linear-to-t from-white via-white/95 to-transparent" />
     </div>
   )
 }

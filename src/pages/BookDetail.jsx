@@ -171,7 +171,7 @@ export default function BookDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-20 flex items-center justify-center bg-gradient-to-br from-slate-50 to-indigo-50 px-4">
+      <div className="min-h-screen pt-20 flex items-center justify-center bg-linear-to-br from-slate-50 to-indigo-50 px-4">
         <div className="text-center p-8 max-w-md mx-auto">
           <div className="w-16 h-16 sm:w-20 sm:h-20 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-6" />
           <p className="text-lg sm:text-xl text-gray-600 font-semibold">Kitob yuklanmoqda...</p>
@@ -199,7 +199,7 @@ export default function BookDetail() {
 
   const hasAudio = book.audio_url
   return (
-    <div className="min-h-screen pt-4 sm:pt-8 lg:pt-16 pb-12 px-4 sm:px-6 lg:px-12 bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/30">
+    <div className="min-h-screen pt-4 sm:pt-8 lg:pt-16 pb-12 px-4 sm:px-6 lg:px-12 bg-linear-to-br from-slate-50 via-indigo-50/30 to-purple-50/30">
       {/* 🔙 MOBILE BACK BUTTON */}
       <div className="max-w-6xl mx-auto mb-6 lg:mb-12 lg:hidden">
         <button
@@ -221,13 +221,13 @@ export default function BookDetail() {
           </div>
 
           {/* Title */}
-          <h1 className="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black bg-gradient-to-r from-gray-900 via-indigo-900 to-purple-900 bg-clip-text text-transparent mb-4 sm:mb-6 leading-tight px-2 sm:px-4">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black bg-linear-to-r from-gray-900 via-indigo-900 to-purple-900 bg-clip-text text-transparent mb-4 sm:mb-6 leading-tight px-2 sm:px-4">
             {book.title}
           </h1>
 
           {/* Author + Rating */}
           <div className="flex flex-col lg:flex-row gap-4 lg:gap-8 items-center justify-center px-2 sm:px-4 mb-8 sm:mb-12">
-            <div className="bg-gradient-to-r from-indigo-500/20 to-purple-500/20 backdrop-blur-xl px-4 sm:px-8 py-3 sm:py-4 lg:py-5 rounded-2xl shadow-xl border border-indigo-200/50">
+            <div className="bg-linear-to-r from-indigo-500/20 to-purple-500/20 backdrop-blur-xl px-4 sm:px-8 py-3 sm:py-4 lg:py-5 rounded-2xl shadow-xl border border-indigo-200/50">
               <p className="text-lg sm:text-2xl lg:text-3xl font-black text-indigo-900 text-center">{book.author}</p>
             </div>
 
@@ -270,7 +270,7 @@ export default function BookDetail() {
             {/* Cover Image */}
             <div className="group relative bg-white/95 backdrop-blur-xl p-4 sm:p-6 rounded-3xl shadow-2xl border border-gray-200/50 overflow-hidden">
               {book.image_url ? (
-                <div className="aspect-[2.5/4] sm:aspect-3/4 w-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl overflow-hidden shadow-xl group-hover:shadow-2xl">
+                <div className="aspect-[2.5/4] sm:aspect-3/4 w-full bg-linear-to-br from-gray-100 to-gray-200 rounded-2xl overflow-hidden shadow-xl group-hover:shadow-2xl">
                   <img
                     src={book.image_url}
                     alt={book.title}
@@ -279,7 +279,7 @@ export default function BookDetail() {
                   />
                 </div>
               ) : (
-                <div className="w-full aspect-[2.5/4] sm:aspect-3/4 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-2xl">
+                <div className="w-full aspect-[2.5/4] sm:aspect-3/4 bg-linear-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-2xl">
                   <BookOpen className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 text-white/90" />
                 </div>
               )}
@@ -290,7 +290,7 @@ export default function BookDetail() {
               {hasAudio && (
                 <button
                   onClick={downloadAudio}
-                  className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white p-4 sm:p-5 lg:p-6 rounded-2xl shadow-2xl hover:shadow-3xl hover:-translate-y-1 font-bold text-sm sm:text-base flex items-center gap-2 justify-center transition-all group"
+                  className="w-full bg-linear-to-r from-purple-600 to-purple-700 text-white p-4 sm:p-5 lg:p-6 rounded-2xl shadow-2xl hover:shadow-3xl hover:-translate-y-1 font-bold text-sm sm:text-base flex items-center gap-2 justify-center transition-all group"
                 >
                   <Download className="w-4 h-4 sm:w-5 group-hover:animate-bounce" />
                   Audio yuklash
@@ -300,7 +300,7 @@ export default function BookDetail() {
               <button
                 onClick={downloadPDF}
                 disabled={!book.pdf_url}
-                className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-4 sm:p-5 lg:p-6 rounded-2xl shadow-2xl hover:shadow-3xl hover:-translate-y-1 font-bold text-sm sm:text-base flex items-center gap-2 justify-center transition-all disabled:opacity-50 group"
+                className="w-full bg-linear-to-r from-emerald-600 to-emerald-700 text-white p-4 sm:p-5 lg:p-6 rounded-2xl shadow-2xl hover:shadow-3xl hover:-translate-y-1 font-bold text-sm sm:text-base flex items-center gap-2 justify-center transition-all disabled:opacity-50 group"
               >
                 <Download className="w-4 h-4 sm:w-5 group-hover:animate-bounce" />
                 PDF yuklash
@@ -309,7 +309,7 @@ export default function BookDetail() {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={copyShareLink}
-                  className="p-4 sm:p-5 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-2xl shadow-2xl hover:shadow-3xl hover:-translate-y-1 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all"
+                  className="p-4 sm:p-5 bg-linear-to-r from-indigo-500 to-blue-600 text-white rounded-2xl shadow-2xl hover:shadow-3xl hover:-translate-y-1 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all"
                 >
                   <Share2 className="w-4 h-4 sm:w-5" />
                   Ulashish
@@ -319,8 +319,8 @@ export default function BookDetail() {
                   onClick={toggleLike}
                   className={`p-4 sm:p-5 rounded-2xl shadow-2xl hover:shadow-3xl hover:-translate-y-1 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all ${
                     isLiked
-                      ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-rose-500/25'
-                      : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 hover:bg-pink-50'
+                      ? 'bg-linear-to-r from-rose-500 to-pink-500 text-white shadow-rose-500/25'
+                      : 'bg-linear-to-r from-gray-100 to-gray-200 text-gray-700 hover:bg-pink-50'
                   }`}
                 >
                   <Heart className={`w-4 h-4 sm:w-5 ${isLiked ? 'fill-rose-400' : ''}`} />
@@ -342,7 +342,7 @@ export default function BookDetail() {
                 className="block bg-white/95 backdrop-blur-xl p-4 sm:p-6 lg:p-8 rounded-3xl shadow-2xl border border-gray-200/50 hover:shadow-3xl hover:-translate-y-2 transition-all overflow-hidden"
               >
                 <h2 className="text-xl sm:text-2xl lg:text-3xl font-black mb-4 flex items-center gap-2 sm:gap-3 text-gray-900 group-hover:text-red-600">
-                  <Play className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 text-red-600 flex-shrink-0" />
+                  <Play className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 text-red-600 shrink-0" />
                   Video parcha
                 </h2>
                 <div className="relative aspect-video w-full bg-black/10 rounded-2xl overflow-hidden shadow-2xl">
@@ -351,7 +351,7 @@ export default function BookDetail() {
                     alt="Trailer"
                     className="w-full h-full object-cover hover:scale-105 transition-transform"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-r from-red-600/40 to-transparent flex items-center justify-center">
+                  <div className="absolute inset-0 bg-linear-to-r from-red-600/40 to-transparent flex items-center justify-center">
                     <Play className="w-16 h-16 sm:w-20 sm:h-20 text-white drop-shadow-2xl" />
                   </div>
                 </div>
@@ -362,9 +362,9 @@ export default function BookDetail() {
 
             {/* Audio Player */}
             {hasAudio && (
-              <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 backdrop-blur-xl p-4 sm:p-6 lg:p-8 rounded-3xl shadow-2xl border border-purple-200/50">
+              <div className="bg-linear-to-r from-purple-500/10 to-pink-500/10 backdrop-blur-xl p-4 sm:p-6 lg:p-8 rounded-3xl shadow-2xl border border-purple-200/50">
                 <h2 className="text-xl sm:text-2xl lg:text-3xl font-black mb-4 sm:mb-6 flex items-center gap-2 text-purple-900">
-                  <Volume2 className="w-6 h-6 sm:w-8 text-purple-600 flex-shrink-0" />
+                  <Volume2 className="w-6 h-6 sm:w-8 text-purple-600 shrink-0" />
                   Audio Kitob
                 </h2>
                 
@@ -381,7 +381,7 @@ export default function BookDetail() {
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 sm:gap-3">
-                        <span className="text-xs sm:text-sm font-medium text-gray-700 min-w-[3.5rem]">{formatTime(currentTime)}</span>
+                        <span className="text-xs sm:text-sm font-medium text-gray-700 min-w-14">{formatTime(currentTime)}</span>
                         <div className="flex-1 h-1.5 sm:h-2 bg-purple-200/60 rounded-full overflow-hidden">
                           <input
                             type="range"
@@ -394,13 +394,13 @@ export default function BookDetail() {
                             }}
                           />
                         </div>
-                        <span className="text-xs sm:text-sm font-medium text-gray-700 min-w-[3.5rem]">{formatTime(duration)}</span>
+                        <span className="text-xs sm:text-sm font-medium text-gray-700 min-w-14">{formatTime(duration)}</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <Volume2 className="w-5 h-5 text-purple-600 flex-shrink-0" />
+                    <Volume2 className="w-5 h-5 text-purple-600 shrink-0" />
                     <input
                       type="range"
                       min="0" max="1" step="0.1"
@@ -416,7 +416,7 @@ export default function BookDetail() {
             {/* Description */}
             <div className="bg-white/95 backdrop-blur-xl p-4 sm:p-6 lg:p-8 rounded-3xl shadow-2xl border border-gray-200/50">
               <h2 className="text-xl sm:text-2xl lg:text-3xl font-black mb-4 sm:mb-6 flex items-center gap-2 text-gray-900">
-                <FileText className="w-6 h-6 sm:w-8 text-indigo-600 flex-shrink-0" />
+                <FileText className="w-6 h-6 sm:w-8 text-indigo-600 shrink-0" />
                 Qisqacha mazmun
               </h2>
               <div className="text-base sm:text-lg text-gray-700 leading-relaxed">
@@ -438,11 +438,11 @@ export default function BookDetail() {
         {/* ⭐ REVIEWS SECTION */}
         <div className="space-y-6 lg:space-y-12">
           <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-gradient-to-br from-amber-400 to-yellow-400 rounded-2xl flex items-center justify-center shadow-2xl p-2 sm:p-3">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-linear-to-br from-amber-400 to-yellow-400 rounded-2xl flex items-center justify-center shadow-2xl p-2 sm:p-3">
               <Star className="w-6 h-6 sm:w-8 text-white drop-shadow-lg" />
             </div>
             <div>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black bg-gradient-to-r from-gray-900 to-amber-900 bg-clip-text text-transparent mb-1 px-1">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black bg-linear-to-r from-gray-900 to-amber-900 bg-clip-text text-transparent mb-1 px-1">
                 Foydalanuvchi taassurotlari
               </h2>
               <p className="text-lg sm:text-xl text-gray-600 font-semibold">{reviews.length} ta haqiqiy fikr</p>
@@ -450,7 +450,7 @@ export default function BookDetail() {
           </div>
 
           {/* Add Review Form */}
-          <div className="bg-gradient-to-r from-amber-50 to-yellow-50/60 backdrop-blur-xl p-4 sm:p-6 lg:p-6 rounded-3xl shadow-2xl border border-amber-200/50 mb-8 lg:mb-8">
+          <div className="bg-linear-to-r from-amber-50 to-yellow-50/60 backdrop-blur-xl p-4 sm:p-6 lg:p-6 rounded-3xl shadow-2xl border border-amber-200/50 mb-8 lg:mb-8">
             <button
               onClick={() => setShowReviewForm(!showReviewForm)}
               className="group flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold text-amber-800 hover:text-amber-900 mb-4 sm:mb-6 p-3 sm:p-4 rounded-2xl hover:bg-amber-100 transition-all shadow-lg border border-amber-200/30 w-full sm:w-auto"
@@ -462,7 +462,7 @@ export default function BookDetail() {
             {showReviewForm && user ? (
               <form onSubmit={submitReview} className="space-y-4 sm:space-y-6 max-w-2xl mx-auto">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 sm:p-6 bg-white/70 backdrop-blur-xl rounded-2xl shadow-xl border border-amber-200/30">
-                  <label className="text-lg font-bold text-gray-800 whitespace-nowrap min-w-[6rem]">Reyting:</label>
+                  <label className="text-lg font-bold text-gray-800 whitespace-nowrap min-w-24">Reyting:</label>
                   <div className="flex gap-2 flex-wrap">
                     {[...Array(5)].map((_, i) => (
                       <button
@@ -471,7 +471,7 @@ export default function BookDetail() {
                         onClick={() => setRating(i + 1)}
                         className={`p-2 sm:p-3 rounded-xl shadow-lg transition-all w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center ${
                           rating >= i + 1
-                            ? 'bg-gradient-to-r from-amber-400 to-yellow-400 text-white shadow-amber-500/50 scale-105'
+                            ? 'bg-linear-to-r from-amber-400 to-yellow-400 text-white shadow-amber-500/50 scale-105'
                             : 'bg-gray-200 text-gray-500 hover:from-amber-100 hover:shadow-xl hover:scale-105'
                         }`}
                       >
@@ -504,7 +504,7 @@ export default function BookDetail() {
                 <button
                   type="submit"
                   disabled={submittingReview || (!comment.trim() && rating < 5)}
-                  className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 text-white py-4 sm:py-6 px-6 sm:px-8 rounded-2xl text-lg sm:text-xl font-bold shadow-3xl hover:shadow-4xl hover:-translate-y-1 transition-all disabled:opacity-50 flex items-center gap-2 justify-center"
+                  className="w-full bg-linear-to-r from-amber-600 to-yellow-600 text-white py-4 sm:py-6 px-6 sm:px-8 rounded-2xl text-lg sm:text-xl font-bold shadow-3xl hover:shadow-4xl hover:-translate-y-1 transition-all disabled:opacity-50 flex items-center gap-2 justify-center"
                 >
                   {submittingReview ? (
                     <>
@@ -528,7 +528,7 @@ export default function BookDetail() {
                 </p>
                 <button
                   onClick={goToLogin}
-                  className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-bold text-base sm:text-lg shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all"
+                  className="inline-flex items-center gap-2 bg-linear-to-r from-indigo-600 to-purple-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-bold text-base sm:text-lg shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all"
                 >
                   Tizimga kirish →
                 </button>
@@ -547,7 +547,7 @@ export default function BookDetail() {
                 </p>
                 <button
                   onClick={() => setShowReviewForm(true)}
-                  className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-2xl font-bold text-base sm:text-lg shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all flex items-center gap-2 mx-auto"
+                  className="px-6 sm:px-8 py-3 sm:py-4 bg-linear-to-r from-amber-500 to-orange-500 text-white rounded-2xl font-bold text-base sm:text-lg shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all flex items-center gap-2 mx-auto"
                 >
                   <Plus className="w-4 h-4 sm:w-5" />
                   Birinchi taassurot
@@ -560,7 +560,7 @@ export default function BookDetail() {
                   className="group bg-white/95 backdrop-blur-xl p-4 sm:p-6 lg:p-8 rounded-3xl shadow-2xl hover:shadow-3xl transition-all border border-gray-200/30 hover:border-amber-200/50 hover:-translate-y-1"
                 >
                   <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:gap-6 mb-4 lg:mb-6">
-                    <div className="flex items-center gap-1 p-2 sm:p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl shadow-lg flex-shrink-0 order-2 lg:order-1">
+                    <div className="flex items-center gap-1 p-2 sm:p-3 bg-linear-to-r from-amber-50 to-orange-50 rounded-xl shadow-lg shrink-0 order-2 lg:order-1">
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
@@ -575,7 +575,7 @@ export default function BookDetail() {
 
                     <div className="flex-1 min-w-0 order-1 lg:order-2">
                       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-indigo-100 to-pink-100 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0 group-hover:scale-105">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-linear-to-br from-indigo-100 to-pink-100 rounded-xl flex items-center justify-center shadow-lg shrink-0 group-hover:scale-105">
                           <User className="w-5 h-5 sm:w-6 text-indigo-600" />
                         </div>
                         <div className="min-w-0 flex-1">

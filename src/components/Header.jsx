@@ -26,10 +26,10 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3"> {/* ✅ Link */}
-          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg">
+          <div className="w-12 h-12 bg-linear-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg">
             <BookOpen className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-3xl font-black bg-gradient-to-r from-gray-900 to-indigo-900 bg-clip-text text-transparent hover:scale-105 transition-transform">
+          <h1 className="text-3xl font-black bg-linear-to-r from-gray-900 to-indigo-900 bg-clip-text text-transparent hover:scale-105 transition-transform">
             Kitoblar
           </h1>
         </Link>
@@ -58,7 +58,7 @@ export default function Header() {
           ) : (
             <Link 
               to="/login" 
-              className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+              className="px-8 py-4 bg-linear-to-r from-indigo-600 to-purple-600 text-white rounded-2xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
             >
               Kirish / Ro'yxat
             </Link>

@@ -247,14 +247,14 @@ function AdminBooks() {
                      (editingId ? editingBook : newBook).description
 
   return (
-    <div className="pt-24 pb-20 px-4 sm:px-6 lg:px-24 max-w-7xl mx-auto bg-gradient-to-br from-slate-50 to-indigo-50">
+    <div className="pt-24 pb-20 px-4 sm:px-6 lg:px-24 max-w-7xl mx-auto bg-linear-to-br from-slate-50 to-indigo-50">
       {/* Header */}
       <div className="flex items-center gap-4 mb-12">
-        <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-2xl">
+        <div className="w-16 h-16 bg-linear-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-2xl">
           <Book className="w-9 h-9 text-white" />
         </div>
         <div>
-          <h1 className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-gray-900 via-indigo-900 to-purple-900 bg-clip-text text-transparent">
+          <h1 className="text-4xl sm:text-5xl font-black bg-linear-to-r from-gray-900 via-indigo-900 to-purple-900 bg-clip-text text-transparent">
             Admin Panel
           </h1>
           <p className="text-xl text-gray-600 mt-1">Cloudinary + Supabase (PDF/Audio/Rasm/Trailer 100% ishlaydi)</p>
@@ -310,7 +310,7 @@ function AdminBooks() {
                 if (e.target.files[0]) setCurrentPreview(URL.createObjectURL(e.target.files[0]))
               }}
               disabled={uploading}
-              className="w-full p-4 sm:p-6 border-2 border-dashed border-gray-300 rounded-2xl file:mr-4 file:py-3 file:px-5 file:rounded-xl file:border-0 file:bg-gradient-to-r file:from-indigo-500 file:to-purple-500 file:text-white file:font-semibold hover:file:brightness-105"
+              className="w-full p-4 sm:p-6 border-2 border-dashed border-gray-300 rounded-2xl file:mr-4 file:py-3 file:px-5 file:rounded-xl file:border-0 file:bg-linear-to-r file:from-indigo-500 file:to-purple-500 file:text-white file:font-semibold hover:file:brightness-105"
             />
             {currentPreview && (
               <img src={currentPreview} alt="Preview" className="w-full h-32 sm:h-40 mt-3 object-cover rounded-2xl shadow-lg border-4 border-indigo-100" />
@@ -328,7 +328,7 @@ function AdminBooks() {
               accept="audio/*"
               onChange={(e) => setAudioFile(e.target.files[0])}
               disabled={uploading}
-              className="w-full p-4 sm:p-6 border-2 border-dashed border-gray-300 rounded-2xl file:mr-4 file:py-3 file:px-5 file:rounded-xl file:border-0 file:bg-gradient-to-r file:from-purple-500 file:to-pink-500 file:text-white file:font-semibold hover:file:brightness-105"
+              className="w-full p-4 sm:p-6 border-2 border-dashed border-gray-300 rounded-2xl file:mr-4 file:py-3 file:px-5 file:rounded-xl file:border-0 file:bg-linear-to-r file:from-purple-500 file:to-pink-500 file:text-white file:font-semibold hover:file:brightness-105"
             />
             {audioFile && (
               <p className="mt-2 text-sm text-purple-600 font-semibold flex items-center gap-2">
@@ -346,7 +346,7 @@ function AdminBooks() {
               accept="application/pdf"
               onChange={(e) => setPdfFile(e.target.files[0])}
               disabled={uploading}
-              className="w-full p-4 sm:p-6 border-2 border-dashed border-gray-300 rounded-2xl file:mr-4 file:py-3 file:px-5 file:rounded-xl file:border-0 file:bg-gradient-to-r file:from-orange-500 file:to-red-500 file:text-white file:font-semibold hover:file:brightness-105"
+              className="w-full p-4 sm:p-6 border-2 border-dashed border-gray-300 rounded-2xl file:mr-4 file:py-3 file:px-5 file:rounded-xl file:border-0 file:bg-linear-to-r file:from-orange-500 file:to-red-500 file:text-white file:font-semibold hover:file:brightness-105"
             />
             {pdfFile && (
               <p className="mt-2 text-sm text-green-600 font-semibold flex items-center gap-2">
@@ -423,7 +423,7 @@ function AdminBooks() {
             <button 
               type="submit" 
               disabled={!isFormValid || loading || uploading}
-              className="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 text-white py-4 sm:py-6 px-8 rounded-2xl text-lg font-black shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all disabled:opacity-50 flex items-center gap-3 justify-center"
+              className="flex-1 bg-linear-to-r from-emerald-600 to-green-600 text-white py-4 sm:py-6 px-8 rounded-2xl text-lg font-black shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all disabled:opacity-50 flex items-center gap-3 justify-center"
             >
               {uploading ? (
                 <>
@@ -441,7 +441,7 @@ function AdminBooks() {
               <button
                 type="button"
                 onClick={cancelEdit}
-                className="px-8 py-4 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-2xl font-black shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center gap-2"
+                className="px-8 py-4 bg-linear-to-r from-gray-500 to-gray-600 text-white rounded-2xl font-black shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center gap-2"
               >
                 <X className="w-5 h-5" />
                 Bekor
@@ -472,7 +472,7 @@ function AdminBooks() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-gradient-to-r from-indigo-50 to-purple-50">
+              <tr className="bg-linear-to-r from-indigo-50 to-purple-50">
                 <th className="p-4 sm:p-6 text-left font-bold text-lg text-gray-800">Rasm</th>
                 <th className="p-4 sm:p-6 text-left font-bold text-lg text-gray-800">Kitob ma'lumotlari</th>
                 <th className="p-4 sm:p-6 text-left font-bold text-lg text-gray-800 hidden md:table-cell">Muallif</th>
@@ -488,7 +488,7 @@ function AdminBooks() {
                     {book.image_url ? (
                       <img src={book.image_url} alt={book.title} className="w-16 sm:w-20 h-24 sm:h-28 object-cover rounded-2xl shadow-lg" />
                     ) : (
-                      <div className="w-16 sm:w-20 h-24 sm:h-28 bg-gradient-to-br from-gray-200 to-gray-300 rounded-2xl flex items-center justify-center text-xl shadow-lg">
+                      <div className="w-16 sm:w-20 h-24 sm:h-28 bg-linear-to-br from-gray-200 to-gray-300 rounded-2xl flex items-center justify-center text-xl shadow-lg">
                         📚
                       </div>
                     )}
@@ -501,7 +501,7 @@ function AdminBooks() {
                     <div className="font-bold text-base sm:text-lg text-indigo-700">{book.author}</div>
                   </td>
                   <td className="p-4 sm:p-6 hidden lg:table-cell">
-                    <span className="px-3 py-1.5 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 rounded-full font-bold text-sm uppercase tracking-wide">
+                    <span className="px-3 py-1.5 bg-linear-to-r from-indigo-100 to-purple-100 text-indigo-800 rounded-full font-bold text-sm uppercase tracking-wide">
                       {book.category}
                     </span>
                   </td>

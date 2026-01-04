@@ -7,7 +7,7 @@ import Login from './pages/Login'
 
 function App() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-indigo-50">
       <HashRouter>
         <Header />
         <Routes>

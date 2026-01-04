@@ -47,10 +47,10 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen pt-32 flex items-center justify-center bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+    <div className="min-h-screen pt-32 flex items-center justify-center bg-linear-to-br from-indigo-50 via-purple-50 to-pink-50">
       <div className="max-w-md w-full bg-white/95 backdrop-blur-xl rounded-3xl p-12 shadow-2xl border border-white/50">
         <div className="text-center mb-12">
-          <div className="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl">
+          <div className="w-24 h-24 bg-linear-to-br from-indigo-500 to-purple-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl">
             <BookOpen className="w-12 h-12 text-white" />
           </div>
           <h1 className="text-4xl lg:text-5xl font-black text-gray-900 mb-2">
@@ -91,7 +91,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white py-6 px-8 rounded-2xl text-xl font-black shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+            className="w-full bg-linear-to-r from-indigo-600 via-purple-600 to-pink-600 text-white py-6 px-8 rounded-2xl text-xl font-black shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
           >
             {loading ? (
               <>

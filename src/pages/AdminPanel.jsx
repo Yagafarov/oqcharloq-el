@@ -25,7 +25,7 @@ function AdminPanel() {
   return (
     <div className="pt-24 pb-20 px-6 lg:px-24 max-w-7xl mx-auto">
       <div className="flex items-center gap-4 mb-12">
-        <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-xl">
+        <div className="w-12 h-12 bg-linear-to-br from-red-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-xl">
           <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
           </svg>
@@ -38,7 +38,7 @@ function AdminPanel() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        <div className="group bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-8 rounded-3xl shadow-2xl hover:shadow-3xl transition-all cursor-pointer">
+        <div className="group bg-linear-to-br from-indigo-500 to-purple-600 text-white p-8 rounded-3xl shadow-2xl hover:shadow-3xl transition-all cursor-pointer">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-indigo-100 text-sm uppercase tracking-wide">Jami kitoblar</p>
@@ -48,7 +48,7 @@ function AdminPanel() {
           </div>
         </div>
 
-        <div className="group bg-gradient-to-br from-emerald-500 to-green-600 text-white p-8 rounded-3xl shadow-2xl hover:shadow-3xl transition-all cursor-pointer">
+        <div className="group bg-linear-to-br from-emerald-500 to-green-600 text-white p-8 rounded-3xl shadow-2xl hover:shadow-3xl transition-all cursor-pointer">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-emerald-100 text-sm uppercase tracking-wide">Bugun ko'rishlar</p>
@@ -58,7 +58,7 @@ function AdminPanel() {
           </div>
         </div>
 
-        <div className="group bg-gradient-to-br from-orange-500 to-red-600 text-white p-8 rounded-3xl shadow-2xl hover:shadow-3xl transition-all cursor-pointer">
+        <div className="group bg-linear-to-br from-orange-500 to-red-600 text-white p-8 rounded-3xl shadow-2xl hover:shadow-3xl transition-all cursor-pointer">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-orange-100 text-sm uppercase tracking-wide">Yuklab olinganlar</p>
@@ -68,7 +68,7 @@ function AdminPanel() {
           </div>
         </div>
 
-        <div className="group bg-gradient-to-br from-slate-500 to-gray-600 text-white p-8 rounded-3xl shadow-2xl hover:shadow-3xl transition-all">
+        <div className="group bg-linear-to-br from-slate-500 to-gray-600 text-white p-8 rounded-3xl shadow-2xl hover:shadow-3xl transition-all">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-100 text-sm uppercase tracking-wide">Faol foydalanuvchilar</p>
@@ -91,7 +91,7 @@ function AdminPanel() {
           </div>
         </a>
 
-        <div className="group bg-gradient-to-br from-indigo-600 to-purple-600 text-white p-10 rounded-3xl shadow-2xl hover:shadow-3xl transition-all hover:-translate-y-2">
+        <div className="group bg-linear-to-br from-indigo-600 to-purple-600 text-white p-10 rounded-3xl shadow-2xl hover:shadow-3xl transition-all hover:-translate-y-2">
           <Upload className="w-16 h-16 mx-auto mb-6 group-hover:scale-110 transition-all" />
           <h3 className="text-3xl font-black text-center mb-4">PDF yuklash</h3>
           <p className="text-xl text-indigo-100 text-center mb-8 opacity-90">Yangi kitob PDF'ini yuklang va tezkor qo'shing</p>

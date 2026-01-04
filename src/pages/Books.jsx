@@ -71,7 +71,7 @@ export default function Books() {
   return (
     <div className="pt-24 pb-20 px-6 lg:px-24 max-w-7xl mx-auto">
       <div className="text-center mb-20">
-        <h1 className="text-6xl lg:text-7xl font-black bg-gradient-to-r from-gray-900 via-indigo-900 to-purple-900 bg-clip-text text-transparent mb-8">
+        <h1 className="text-6xl lg:text-7xl font-black bg-linear-to-r from-gray-900 via-indigo-900 to-purple-900 bg-clip-text text-transparent mb-8">
           Kitoblar kutubxonasi
         </h1>
         <p className="text-2xl text-gray-600 max-w-2xl mx-auto">
@@ -98,7 +98,7 @@ export default function Books() {
               onClick={() => setSelectedCategory(cat)}
               className={`px-8 py-4 rounded-3xl font-bold text-lg shadow-lg transition-all ${
                 selectedCategory === cat
-                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-indigo-500/50 ring-4 ring-indigo-200 scale-105'
+                  ? 'bg-linear-to-r from-indigo-600 to-purple-600 text-white shadow-indigo-500/50 ring-4 ring-indigo-200 scale-105'
                   : 'bg-white/80 backdrop-blur-xl text-gray-700 hover:bg-indigo-50 hover:shadow-xl border'
               }`}
             >
