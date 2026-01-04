@@ -162,7 +162,7 @@ export default function BookDetail() {
   const youtubeId = getYouTubeId(book.trailer_url)
   
   const hasValidTrailer = youtubeId && book.trailer_url
-  console.log(hasValidTrailer);
+  console.log(book);
 
   return (
     <div className="min-h-screen pt-16 pb-16 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">
@@ -261,7 +261,7 @@ export default function BookDetail() {
         <div className="space-y-6 lg:space-y-8 lg:pt-4">
           {/* 🎥 YOUTUBE TRAILER - THUMBNAIL + CLICK (DNS FIX) */}
             <a 
-              href={`https://youtube.com/watch?v=${youtubeId}`} 
+              href={`https://youtube.com/watch?v=${book.trailer_url}`} 
               target="_blank" 
               rel="noopener noreferrer"
               className="block bg-white/90 backdrop-blur-xl p-6 sm:p-8 lg:p-12 rounded-3xl shadow-2xl border border-gray-200/50 hover:shadow-3xl hover:-translate-y-2 transition-all group overflow-hidden"
@@ -272,7 +272,7 @@ export default function BookDetail() {
               </h2>
               <div className="relative aspect-video w-full bg-black/10 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl">
                 <img 
-                  src={`https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`} 
+                  src={`https://img.youtube.com/vi/${book.trailer_url}/maxresdefault.jpg`} 
                   alt="Trailer thumbnail"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
