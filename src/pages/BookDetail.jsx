@@ -21,13 +21,7 @@ export default function BookDetail() {
   const [submittingReview, setSubmittingReview] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
 
-  // ✅ YOUUBE ID - BETTER ERROR HANDLING
-  const getYouTubeId = (url) => {
-    if (!url) return null
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
-    const match = url.match(regExp)
-    return (match && match[2].length === 11) ? match[2] : null
-  }
+
 
   useEffect(() => {
     fetchBookAndReviews()
@@ -158,11 +152,8 @@ export default function BookDetail() {
       </div>
     )
   }
-
-  const youtubeId = getYouTubeId(book.trailer_url)
   
-  const hasValidTrailer = youtubeId && book.trailer_url
-  console.log(book);
+
 
   return (
     <div className="min-h-screen pt-16 pb-16 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">
