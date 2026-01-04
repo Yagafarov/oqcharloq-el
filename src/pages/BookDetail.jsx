@@ -248,7 +248,6 @@ export default function BookDetail() {
         {/* 📝 O'NG: Content - RESPONSIVE */}
         <div className="space-y-6 lg:space-y-8 lg:pt-4">
           {/* 🎥 YOUTUBE TRAILER - RESPONSIVE */}
-          {book.trailer_url && getYouTubeId(book.trailer_url) && (
             <div className="bg-white/90 backdrop-blur-xl p-6 sm:p-8 lg:p-12 rounded-3xl shadow-2xl border border-gray-200/50">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-6 flex items-center gap-3 sm:gap-4 text-gray-900">
                 <Play className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 text-red-600 flex-shrink-0" />
@@ -267,7 +266,6 @@ export default function BookDetail() {
                 />
               </div>
             </div>
-          )}
 
           {/* 📄 Description */}
           <div className="bg-white/90 backdrop-blur-xl p-6 sm:p-8 lg:p-12 rounded-3xl shadow-2xl border border-gray-200/50">
