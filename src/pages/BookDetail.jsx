@@ -446,13 +446,13 @@ export default function BookDetail() {
           </div>
 
           {/* Add Review Form */}
-          <div className="bg-gradient-to-r from-amber-50 to-yellow-50/60 backdrop-blur-xl p-4 sm:p-6 lg:p-12 rounded-3xl shadow-2xl border border-amber-200/50 mb-8 lg:mb-12">
+          <div className="bg-gradient-to-r from-amber-50 to-yellow-50/60 backdrop-blur-xl p-4 sm:p-6 lg:p-6 rounded-3xl shadow-2xl border border-amber-200/50 mb-8 lg:mb-8">
             <button
               onClick={() => setShowReviewForm(!showReviewForm)}
               className="group flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold text-amber-800 hover:text-amber-900 mb-4 sm:mb-6 p-3 sm:p-4 rounded-2xl hover:bg-amber-100 transition-all shadow-lg border border-amber-200/30 w-full sm:w-auto"
             >
               <Plus className={`w-5 h-5 sm:w-6 transition-transform ${showReviewForm ? 'rotate-45 scale-110' : ''}`} />
-              <span>{showReviewForm ? 'Bekor qilish' : 'Yangi taassurot +'}</span>
+              <span>{showReviewForm ? 'Bekor qilish' : 'Yangi taassurot'}</span>
             </button>
 
             {showReviewForm && user ? (

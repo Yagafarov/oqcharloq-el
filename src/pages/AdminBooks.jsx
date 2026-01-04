@@ -8,12 +8,17 @@ import {
 function AdminBooks() {
   const [books, setBooks] = useState([])
   const [newBook, setNewBook] = useState({
-    title: '', author: '', description: '', details: '', category: 'adabiyot', 
-    trailer_url: '', audio_url: '' // ✅ Audio qo'shildi
+    title: '', 
+    author: '', 
+    description: '', 
+    details: '', 
+    category: 'adabiyot', 
+    full_trailer_url: '',  // ✅ FULL URL saqlanadi
+    audio_url: ''
   })
   const [pdfFile, setPdfFile] = useState(null)
   const [imageFile, setImageFile] = useState(null)
-  const [audioFile, setAudioFile] = useState(null) // ✅ Audio state
+  const [audioFile, setAudioFile] = useState(null)
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [editingId, setEditingId] = useState(null)
@@ -25,7 +30,26 @@ function AdminBooks() {
     fetchBooks()
   }, [])
 
-  // ✅ PDF/Image/Audio ALOHIDA UPLOAD - 100% ISHLAYDI!
+  // ✅ YAXSHILANGAN YouTube ID extractor
+  const extractYouTubeId = (url) => {
+    if (!url) return ''
+    
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/)([^&\n?#]+)/,
+      /v=([^&\n?#]+)/,
+      /\/([a-zA-Z0-9_-]{11})/
+    ]
+    
+    for (const pattern of patterns) {
+      const match = url.match(pattern)
+      if (match && match[1].length === 11) {
+        return match[1]
+      }
+    }
+    return ''
+  }
+
+  // ✅ PDF/Image/Audio ALOHIDA UPLOAD
   const uploadToCloudinary = async (file, folder = 'books') => {
     if (!file) return null
   
@@ -34,10 +58,9 @@ function AdminBooks() {
     formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET)
     formData.append('folder', folder)
     
-    // 🎯 Resource type logic
     let resourceType = 'auto'
     if (file.type === 'application/pdf') resourceType = 'raw'
-    else if (file.type.startsWith('audio/')) resourceType = 'video' // Audio uchun video/raw ishlatiladi
+    else if (file.type.startsWith('audio/')) resourceType = 'video'
     
     const uploadUrl = `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`
 
@@ -67,18 +90,11 @@ function AdminBooks() {
     }
   }
 
-  const extractYouTubeId = (url) => {
-    if (!url) return ''
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
-    const match = url.match(regExp)
-    return (match && match[2].length === 11) ? match[2] : ''
-  }
-
   const fetchBooks = async () => {
     try {
       const { data } = await supabase
         .from('books')
-        .select('id, title, author, category, image_url, pdf_url, audio_url, trailer_url, description, details, created_at') // ✅ audio_url qo'shildi
+        .select('id, title, author, category, image_url, pdf_url, audio_url, trailer_url, description, details, created_at')
         .order('created_at', { ascending: false })
       setBooks(data || [])
     } catch (error) {
@@ -86,6 +102,7 @@ function AdminBooks() {
     }
   }
 
+  // ✅ FIXED addBook - TRAILER ID TO'G'RI YUBORILADI!
   const addBook = async (e) => {
     e.preventDefault()
     if (!newBook.title || !newBook.author || !newBook.description) {
@@ -98,17 +115,19 @@ function AdminBooks() {
     try {
       console.log('🚀 Kitob qo\'shilmoqda...')
       
-      // Parallel uploads - AUDIO HAM QO'SHILDI ✅
+      // Parallel uploads
       const uploadPromises = []
       if (imageFile) uploadPromises.push(uploadToCloudinary(imageFile, 'covers'))
       if (pdfFile) uploadPromises.push(uploadToCloudinary(pdfFile, 'pdfs'))
-      if (audioFile) uploadPromises.push(uploadToCloudinary(audioFile, 'audio')) // ✅ Audio upload
+      if (audioFile) uploadPromises.push(uploadToCloudinary(audioFile, 'audio'))
       
       const [image_url, pdf_url, audio_url] = await Promise.all(
         uploadPromises.map(p => p.catch(() => null))
       )
       
-      const trailer_url = extractYouTubeId(newBook.trailer_url)
+      // ✅ TRAILER ID - TO'G'RI EXTRACT!
+      const trailer_id = extractYouTubeId(newBook.full_trailer_url)
+      console.log('🎥 Trailer ID:', trailer_id)
 
       const newBookData = {
         title: newBook.title,
@@ -118,18 +137,21 @@ function AdminBooks() {
         category: newBook.category,
         image_url: image_url || null,
         pdf_url: pdf_url || null,
-        audio_url: audio_url || null, // ✅ Audio URL
-        trailer_url: trailer_url || null
+        audio_url: audio_url || null,
+        trailer_url: trailer_id || null  // ✅ DB ga faqat ID!
       }
 
       const { error } = await supabase.from('books').insert([newBookData])
       if (error) throw error
 
       // Reset
-      setNewBook({ title: '', author: '', description: '', details: '', category: 'adabiyot', trailer_url: '', audio_url: '' })
+      setNewBook({ 
+        title: '', author: '', description: '', details: '', 
+        category: 'adabiyot', full_trailer_url: '', audio_url: '' 
+      })
       setPdfFile(null)
       setImageFile(null)
-      setAudioFile(null) // ✅ Reset
+      setAudioFile(null)
       setCurrentPreview(null)
       fetchBooks()
       alert('🎉 Kitob muvaffaqiyatli qo\'shildi!')
@@ -141,21 +163,22 @@ function AdminBooks() {
     }
   }
 
+  // ✅ FIXED updateBook
   const updateBook = async (e) => {
     e.preventDefault()
     setLoading(true)
     
     try {
+      // File uploads
       const updates = {
         title: editingBook.title,
         author: editingBook.author,
         description: editingBook.description,
         details: editingBook.details || null,
         category: editingBook.category,
-        trailer_url: extractYouTubeId(editingBook.trailer_url)
+        trailer_url: extractYouTubeId(editingBook.full_trailer_url)  // ✅ FIXED!
       }
 
-      // Faqat yangi fayllar - AUDIO HAM ✅
       if (imageFile) updates.image_url = await uploadToCloudinary(imageFile, 'covers')
       if (pdfFile) updates.pdf_url = await uploadToCloudinary(pdfFile, 'pdfs')
       if (audioFile) updates.audio_url = await uploadToCloudinary(audioFile, 'audio')
@@ -192,9 +215,13 @@ function AdminBooks() {
     }
   }
 
+  // ✅ FIXED startEdit - Trailer URL reverse
   const startEdit = (book) => {
     setEditingId(book.id)
-    setEditingBook({ ...book })
+    setEditingBook({ 
+      ...book, 
+      full_trailer_url: book.trailer_url ? `https://youtube.com/watch?v=${book.trailer_url}` : ''  // ✅ Reverse!
+    })
     setPdfFile(null)
     setImageFile(null)
     setAudioFile(null)
@@ -230,7 +257,7 @@ function AdminBooks() {
           <h1 className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-gray-900 via-indigo-900 to-purple-900 bg-clip-text text-transparent">
             Admin Panel
           </h1>
-          <p className="text-xl text-gray-600 mt-1">Cloudinary + Supabase (PDF/Audio/Rasm 100% ishlaydi)</p>
+          <p className="text-xl text-gray-600 mt-1">Cloudinary + Supabase (PDF/Audio/Rasm/Trailer 100% ishlaydi)</p>
         </div>
       </div>
 
@@ -290,7 +317,7 @@ function AdminBooks() {
             )}
           </div>
 
-          {/* ✅ AUDIO UPLOAD - YANGI! */}
+          {/* Audio */}
           <div>
             <label className="block text-lg sm:text-xl font-bold mb-3 text-gray-800 flex items-center gap-2">
               <Volume2 className="w-6 h-6 text-purple-600" />
@@ -329,32 +356,44 @@ function AdminBooks() {
             )}
           </div>
 
-          {/* Category & YouTube */}
+          {/* ✅ FIXED TRAILER INPUT */}
+          <div>
+            <label className="block text-lg sm:text-xl font-bold mb-3 text-gray-800">🎥 Trailer URL</label>
+            <input
+              type="text"
+              value={editingId ? editingBook?.full_trailer_url || '' : newBook.full_trailer_url || ''}
+              onChange={(e) => editingId 
+                ? setEditingBook({...editingBook, full_trailer_url: e.target.value})
+                : setNewBook({...newBook, full_trailer_url: e.target.value})
+              }
+              className="w-full p-4 sm:p-6 border-2 border-gray-200 rounded-2xl text-lg focus:border-red-500 focus:ring-4 focus:ring-red-100/50 shadow-lg transition-all"
+              placeholder="https://youtube.com/watch?v=dQw4w9WgXcQ"
+            />
+            {/* ✅ Preview */}
+            {((editingId ? editingBook?.full_trailer_url : newBook.full_trailer_url) || '').length > 0 && (
+              <div className="mt-3 p-3 bg-red-50/80 rounded-xl border border-red-200/50">
+                <p className="text-sm text-red-700 font-semibold flex items-center gap-2">
+                  <Youtube className="w-4 h-4" />
+                  ID: <code className="bg-red-200 px-2 py-1 rounded text-xs font-mono font-bold">
+                    {extractYouTubeId(editingId ? editingBook?.full_trailer_url : newBook.full_trailer_url)}
+                  </code>
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Category */}
           <div>
             <label className="block text-lg sm:text-xl font-bold mb-3 text-gray-800">🏷️ Kategoriya</label>
             <select
               value={editingId ? editingBook?.category || 'adabiyot' : newBook.category}
               onChange={(e) => editingId ? setEditingBook({...editingBook, category: e.target.value}) : setNewBook({...newBook, category: e.target.value})}
-              className="w-full p-4 sm:p-6 border-2 border-gray-200 rounded-2xl text-lg focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100/50"
+              className="w-full p-4 sm:p-6 border-2 border-gray-200 rounded-2xl text-lg focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100/50 shadow-lg transition-all"
             >
               {['adabiyot', 'ilmiy', 'dasturlash', 'tarix', 'falsafa', 'psixologiya'].map(cat => (
                 <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
               ))}
             </select>
-          </div>
-
-          <div>
-            <label className="block text-lg sm:text-xl font-bold mb-3 text-gray-800">🎥 Trailer URL</label>
-            <input
-              type="text"
-              value={editingId ? editingBook?.trailer_url || '' : newBook.trailer_url}
-              onChange={(e) => {
-                const id = extractYouTubeId(e.target.value)
-                editingId ? setEditingBook({...editingBook, trailer_url: id}) : setNewBook({...newBook, trailer_url: id})
-              }}
-              className="w-full p-4 sm:p-6 border-2 border-gray-200 rounded-2xl text-lg focus:border-red-500 focus:ring-4 focus:ring-red-100/50"
-              placeholder="https://youtube.com/watch?v=..."
-            />
           </div>
 
           {/* Description & Details */}
@@ -364,7 +403,7 @@ function AdminBooks() {
               value={editingId ? editingBook?.description || '' : newBook.description}
               onChange={(e) => editingId ? setEditingBook({...editingBook, description: e.target.value}) : setNewBook({...newBook, description: e.target.value})}
               rows="3"
-              className="w-full p-4 sm:p-6 border-2 border-gray-200 rounded-2xl text-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100/50 resize-vertical"
+              className="w-full p-4 sm:p-6 border-2 border-gray-200 rounded-2xl text-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100/50 resize-vertical shadow-lg transition-all"
               required
             />
           </div>
@@ -375,7 +414,7 @@ function AdminBooks() {
               value={editingId ? editingBook?.details || '' : newBook.details}
               onChange={(e) => editingId ? setEditingBook({...editingBook, details: e.target.value}) : setNewBook({...newBook, details: e.target.value})}
               rows="4"
-              className="w-full p-4 sm:p-6 border-2 border-gray-200 rounded-2xl text-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100/50 resize-vertical"
+              className="w-full p-4 sm:p-6 border-2 border-gray-200 rounded-2xl text-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100/50 resize-vertical shadow-lg transition-all"
             />
           </div>
 
@@ -412,7 +451,7 @@ function AdminBooks() {
         </form>
       </div>
 
-      {/* 📊 BOOKS TABLE - AUDIO KO'RSATILADI */}
+      {/* 📊 BOOKS TABLE */}
       <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 overflow-hidden">
         <div className="p-6 sm:p-8 border-b border-gray-200/50 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           <h2 className="text-3xl sm:text-4xl font-black text-gray-900">
@@ -469,7 +508,7 @@ function AdminBooks() {
                   <td className="p-4 sm:p-6 hidden xl:table-cell">
                     <div className="flex flex-col gap-1 text-sm">
                       {book.pdf_url && <span className="text-green-600 font-semibold flex items-center gap-1">📄 PDF</span>}
-                      {book.audio_url && <span className="text-purple-600 font-semibold flex items-center gap-1">🎵 Audio</span>} {/* ✅ Audio ko'rsatiladi */}
+                      {book.audio_url && <span className="text-purple-600 font-semibold flex items-center gap-1">🎵 Audio</span>}
                       {book.trailer_url && <span className="text-red-600 font-semibold flex items-center gap-1">▶️ Video</span>}
                     </div>
                   </td>
