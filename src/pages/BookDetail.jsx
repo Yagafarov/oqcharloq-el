@@ -198,7 +198,6 @@ export default function BookDetail() {
   }
 
   const hasAudio = book.audio_url
-
   return (
     <div className="min-h-screen pt-4 sm:pt-8 lg:pt-16 pb-12 px-4 sm:px-6 lg:px-12 bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/30">
       {/* 🔙 MOBILE BACK BUTTON */}
@@ -271,7 +270,7 @@ export default function BookDetail() {
             {/* Cover Image */}
             <div className="group relative bg-white/95 backdrop-blur-xl p-4 sm:p-6 rounded-3xl shadow-2xl border border-gray-200/50 overflow-hidden">
               {book.image_url ? (
-                <div className="aspect-[2.5/4] sm:aspect-[3/4] w-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl overflow-hidden shadow-xl group-hover:shadow-2xl">
+                <div className="aspect-[2.5/4] sm:aspect-3/4 w-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl overflow-hidden shadow-xl group-hover:shadow-2xl">
                   <img
                     src={book.image_url}
                     alt={book.title}
@@ -280,7 +279,7 @@ export default function BookDetail() {
                   />
                 </div>
               ) : (
-                <div className="w-full aspect-[2.5/4] sm:aspect-[3/4] bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-2xl">
+                <div className="w-full aspect-[2.5/4] sm:aspect-3/4 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-2xl">
                   <BookOpen className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 text-white/90" />
                 </div>
               )}
@@ -334,6 +333,8 @@ export default function BookDetail() {
           {/* Right: Content (9/12 cols) */}
           <div className="lg:col-span-7 xl:col-span-8 space-y-6 lg:space-y-8">
             {/* Trailer */}
+            {
+              book.trailer_url &&(
               <a
                 href={`https://youtube.com/watch?v=${book.trailer_url}`}
                 target="_blank"
@@ -355,6 +356,9 @@ export default function BookDetail() {
                   </div>
                 </div>
               </a>
+
+              )
+            }
 
             {/* Audio Player */}
             {hasAudio && (
