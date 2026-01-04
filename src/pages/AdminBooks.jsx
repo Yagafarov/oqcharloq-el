@@ -1,14 +1,19 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
-import { Plus, Edit3, Trash2, Search, Book, Image, FileText, Youtube, Save, X, UploadCloud, Loader2, CheckCircle } from 'lucide-react'
+import { 
+  Plus, Edit3, Trash2, Search, Book, Image, FileText, Youtube, Music, 
+  Save, X, UploadCloud, Loader2, CheckCircle, Volume2 
+} from 'lucide-react'
 
 function AdminBooks() {
   const [books, setBooks] = useState([])
   const [newBook, setNewBook] = useState({
-    title: '', author: '', description: '', details: '', category: 'adabiyot', trailer_url: ''
+    title: '', author: '', description: '', details: '', category: 'adabiyot', 
+    trailer_url: '', audio_url: '' // ✅ Audio qo'shildi
   })
   const [pdfFile, setPdfFile] = useState(null)
   const [imageFile, setImageFile] = useState(null)
+  const [audioFile, setAudioFile] = useState(null) // ✅ Audio state
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [editingId, setEditingId] = useState(null)
@@ -20,7 +25,7 @@ function AdminBooks() {
     fetchBooks()
   }, [])
 
-  // ✅ PDF/Image ALOHIDA UPLOAD - 100% ISHLAYDI!
+  // ✅ PDF/Image/Audio ALOHIDA UPLOAD - 100% ISHLAYDI!
   const uploadToCloudinary = async (file, folder = 'books') => {
     if (!file) return null
   
@@ -29,13 +34,16 @@ function AdminBooks() {
     formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET)
     formData.append('folder', folder)
     
-    // 🎯 PDF = raw/upload | Rasm = auto/upload
-    const resourceType = file.type === 'application/pdf' ? 'raw' : 'auto'
+    // 🎯 Resource type logic
+    let resourceType = 'auto'
+    if (file.type === 'application/pdf') resourceType = 'raw'
+    else if (file.type.startsWith('audio/')) resourceType = 'video' // Audio uchun video/raw ishlatiladi
+    
     const uploadUrl = `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`
 
     try {
       setUploading(true)
-      console.log(`📤 Yuklanmoqda: ${resourceType}/upload → ${folder}`)
+      console.log(`📤 Yuklanmoqda: ${resourceType}/upload → ${folder}/${file.name}`)
 
       const response = await fetch(uploadUrl, { 
         method: 'POST', 
@@ -70,7 +78,7 @@ function AdminBooks() {
     try {
       const { data } = await supabase
         .from('books')
-        .select('id, title, author, category, image_url, pdf_url, trailer_url, description, details, created_at')
+        .select('id, title, author, category, image_url, pdf_url, audio_url, trailer_url, description, details, created_at') // ✅ audio_url qo'shildi
         .order('created_at', { ascending: false })
       setBooks(data || [])
     } catch (error) {
@@ -90,12 +98,16 @@ function AdminBooks() {
     try {
       console.log('🚀 Kitob qo\'shilmoqda...')
       
-      // Parallel uploads
+      // Parallel uploads - AUDIO HAM QO'SHILDI ✅
       const uploadPromises = []
       if (imageFile) uploadPromises.push(uploadToCloudinary(imageFile, 'covers'))
       if (pdfFile) uploadPromises.push(uploadToCloudinary(pdfFile, 'pdfs'))
+      if (audioFile) uploadPromises.push(uploadToCloudinary(audioFile, 'audio')) // ✅ Audio upload
       
-      const [image_url, pdf_url] = await Promise.all(uploadPromises.map(p => p.catch(() => null)))
+      const [image_url, pdf_url, audio_url] = await Promise.all(
+        uploadPromises.map(p => p.catch(() => null))
+      )
+      
       const trailer_url = extractYouTubeId(newBook.trailer_url)
 
       const newBookData = {
@@ -106,6 +118,7 @@ function AdminBooks() {
         category: newBook.category,
         image_url: image_url || null,
         pdf_url: pdf_url || null,
+        audio_url: audio_url || null, // ✅ Audio URL
         trailer_url: trailer_url || null
       }
 
@@ -113,9 +126,10 @@ function AdminBooks() {
       if (error) throw error
 
       // Reset
-      setNewBook({ title: '', author: '', description: '', details: '', category: 'adabiyot', trailer_url: '' })
+      setNewBook({ title: '', author: '', description: '', details: '', category: 'adabiyot', trailer_url: '', audio_url: '' })
       setPdfFile(null)
       setImageFile(null)
+      setAudioFile(null) // ✅ Reset
       setCurrentPreview(null)
       fetchBooks()
       alert('🎉 Kitob muvaffaqiyatli qo\'shildi!')
@@ -141,9 +155,10 @@ function AdminBooks() {
         trailer_url: extractYouTubeId(editingBook.trailer_url)
       }
 
-      // Faqat yangi fayllar
+      // Faqat yangi fayllar - AUDIO HAM ✅
       if (imageFile) updates.image_url = await uploadToCloudinary(imageFile, 'covers')
       if (pdfFile) updates.pdf_url = await uploadToCloudinary(pdfFile, 'pdfs')
+      if (audioFile) updates.audio_url = await uploadToCloudinary(audioFile, 'audio')
 
       const { error } = await supabase
         .from('books')
@@ -156,6 +171,7 @@ function AdminBooks() {
       setEditingBook(null)
       setPdfFile(null)
       setImageFile(null)
+      setAudioFile(null)
       setCurrentPreview(null)
       fetchBooks()
       alert('✅ Kitob yangilandi!')
@@ -181,6 +197,7 @@ function AdminBooks() {
     setEditingBook({ ...book })
     setPdfFile(null)
     setImageFile(null)
+    setAudioFile(null)
     setCurrentPreview(null)
   }
 
@@ -189,6 +206,7 @@ function AdminBooks() {
     setEditingBook(null)
     setPdfFile(null)
     setImageFile(null)
+    setAudioFile(null)
     setCurrentPreview(null)
   }
 
@@ -212,7 +230,7 @@ function AdminBooks() {
           <h1 className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-gray-900 via-indigo-900 to-purple-900 bg-clip-text text-transparent">
             Admin Panel
           </h1>
-          <p className="text-xl text-gray-600 mt-1">Cloudinary + Supabase (PDF/Rasm 100% ishlaydi)</p>
+          <p className="text-xl text-gray-600 mt-1">Cloudinary + Supabase (PDF/Audio/Rasm 100% ishlaydi)</p>
         </div>
       </div>
 
@@ -269,6 +287,27 @@ function AdminBooks() {
             />
             {currentPreview && (
               <img src={currentPreview} alt="Preview" className="w-full h-32 sm:h-40 mt-3 object-cover rounded-2xl shadow-lg border-4 border-indigo-100" />
+            )}
+          </div>
+
+          {/* ✅ AUDIO UPLOAD - YANGI! */}
+          <div>
+            <label className="block text-lg sm:text-xl font-bold mb-3 text-gray-800 flex items-center gap-2">
+              <Volume2 className="w-6 h-6 text-purple-600" />
+              Audio fayl (MP3/M4A)
+            </label>
+            <input
+              type="file"
+              accept="audio/*"
+              onChange={(e) => setAudioFile(e.target.files[0])}
+              disabled={uploading}
+              className="w-full p-4 sm:p-6 border-2 border-dashed border-gray-300 rounded-2xl file:mr-4 file:py-3 file:px-5 file:rounded-xl file:border-0 file:bg-gradient-to-r file:from-purple-500 file:to-pink-500 file:text-white file:font-semibold hover:file:brightness-105"
+            />
+            {audioFile && (
+              <p className="mt-2 text-sm text-purple-600 font-semibold flex items-center gap-2">
+                <Music className="w-4 h-4" />
+                {audioFile.name}
+              </p>
             )}
           </div>
 
@@ -373,11 +412,7 @@ function AdminBooks() {
         </form>
       </div>
 
-      {/* Table - OLDINGI KABI QOLDIRING */}
-      {/* ... Table qismi o'zgarmadi ... */}
-
-
-      {/* 📊 BOOKS TABLE - RESPONSIVE */}
+      {/* 📊 BOOKS TABLE - AUDIO KO'RSATILADI */}
       <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 overflow-hidden">
         <div className="p-6 sm:p-8 border-b border-gray-200/50 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           <h2 className="text-3xl sm:text-4xl font-black text-gray-900">
@@ -434,6 +469,7 @@ function AdminBooks() {
                   <td className="p-4 sm:p-6 hidden xl:table-cell">
                     <div className="flex flex-col gap-1 text-sm">
                       {book.pdf_url && <span className="text-green-600 font-semibold flex items-center gap-1">📄 PDF</span>}
+                      {book.audio_url && <span className="text-purple-600 font-semibold flex items-center gap-1">🎵 Audio</span>} {/* ✅ Audio ko'rsatiladi */}
                       {book.trailer_url && <span className="text-red-600 font-semibold flex items-center gap-1">▶️ Video</span>}
                     </div>
                   </td>

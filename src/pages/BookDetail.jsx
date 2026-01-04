@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { 
   Download, Heart, Share2, BookOpen, Tag, Star, Send, User, Loader2, 
-  Plus, Eye, MessageCircle, FileText, Play, Clock 
+  Plus, Eye, MessageCircle, FileText, Play, Pause, Volume2, Clock 
 } from 'lucide-react'
 
 export default function BookDetail() {
@@ -21,12 +21,36 @@ export default function BookDetail() {
   const [submittingReview, setSubmittingReview] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
 
-
+  // 🎵 AUDIO PLAYER STATES
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const [volume, setVolume] = useState(1)
+  const audioRef = useRef(null)
 
   useEffect(() => {
     fetchBookAndReviews()
     checkAuth()
   }, [id])
+
+  // 🎵 AUDIO EVENTS
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    const updateTime = () => setCurrentTime(audio.currentTime)
+    const updateDuration = () => setDuration(audio.duration)
+    
+    audio.addEventListener('timeupdate', updateTime)
+    audio.addEventListener('loadedmetadata', updateDuration)
+    audio.addEventListener('ended', () => setIsPlaying(false))
+
+    return () => {
+      audio.removeEventListener('timeupdate', updateTime)
+      audio.removeEventListener('loadedmetadata', updateDuration)
+      audio.removeEventListener('ended', () => setIsPlaying(false))
+    }
+  }, [])
 
   const checkAuth = async () => {
     const { data } = await supabase.auth.getUser()
@@ -38,7 +62,7 @@ export default function BookDetail() {
     try {
       const { data: bookData } = await supabase
         .from('books')
-        .select('id, title, author, category, image_url, pdf_url, description, details, created_at, trailer_url')
+        .select('id, title, author, category, image_url, pdf_url, audio_url, description, details, created_at, trailer_url') // ✅ audio_url qo'shildi
         .eq('id', id)
         .maybeSingle()
 
@@ -70,6 +94,45 @@ export default function BookDetail() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // 🎵 AUDIO CONTROLS
+  const togglePlay = () => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    if (isPlaying) {
+      audio.pause()
+    } else {
+      audio.play()
+    }
+    setIsPlaying(!isPlaying)
+  }
+
+  const handleTimeUpdate = (e) => {
+    setCurrentTime(e.target.currentTime)
+  }
+
+  const handleSeek = (e) => {
+    const audio = audioRef.current
+    if (audio) {
+      audio.currentTime = e.target.value
+      setCurrentTime(e.target.value)
+    }
+  }
+
+  const handleVolumeChange = (e) => {
+    const audio = audioRef.current
+    if (audio) {
+      audio.volume = e.target.value
+      setVolume(e.target.value)
+    }
+  }
+
+  const formatTime = (time) => {
+    const minutes = Math.floor(time / 60)
+    const seconds = Math.floor(time % 60)
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
 
   const goToLogin = () => {
@@ -114,6 +177,15 @@ export default function BookDetail() {
     }
   }
 
+  // 🎵 AUDIO DOWNLOAD
+  const downloadAudio = () => {
+    if (book?.audio_url) {
+      window.open(book.audio_url, '_blank')
+    } else {
+      alert('Audio fayl mavjud emas')
+    }
+  }
+
   const copyShareLink = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href)
@@ -152,8 +224,8 @@ export default function BookDetail() {
       </div>
     )
   }
-  
 
+  const hasAudio = book.audio_url
 
   return (
     <div className="min-h-screen pt-16 pb-16 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">
@@ -215,6 +287,17 @@ export default function BookDetail() {
           </div>
 
           <div className="space-y-4">
+            {/* 🎵 AUDIO DOWNLOAD BUTTON */}
+            {hasAudio && (
+              <button
+                onClick={downloadAudio}
+                className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-purple-700 text-white p-6 sm:p-8 rounded-3xl shadow-2xl hover:shadow-3xl hover:-translate-y-2 font-black text-lg sm:text-xl flex items-center gap-3 sm:gap-4 justify-center transition-all duration-300 group"
+              >
+                <Download className="w-7 h-7 sm:w-9 sm:h-9 group-hover:animate-bounce" />
+                <span>Audio Yuklash</span>
+              </button>
+            )}
+
             <button
               onClick={downloadPDF}
               disabled={!book.pdf_url}
@@ -250,8 +333,7 @@ export default function BookDetail() {
 
         {/* 📝 O'NG: Content */}
         <div className="space-y-6 lg:space-y-8 lg:pt-4">
-          {/* 🎥 YOUTUBE TRAILER - THUMBNAIL + CLICK (DNS FIX) */}
-            <a 
+          <a 
               href={`https://youtube.com/watch?v=${book.trailer_url}`} 
               target="_blank" 
               rel="noopener noreferrer"
@@ -275,6 +357,76 @@ export default function BookDetail() {
                 </div>
               </div>
             </a>
+          {/* 🎵 AUDIO PLAYER */}
+          {hasAudio && (
+            <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 backdrop-blur-xl p-6 sm:p-8 lg:p-12 rounded-3xl shadow-2xl border border-purple-200/50">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-6 flex items-center gap-3 sm:gap-4 text-purple-900">
+                <Volume2 className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 text-purple-600 flex-shrink-0" />
+                Audio Kitob
+              </h2>
+              
+              {/* Hidden Audio Element */}
+              <audio
+                ref={audioRef}
+                src={book.audio_url}
+                preload="metadata"
+                className="hidden"
+              />
+
+              {/* Player Controls */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-4 mb-6">
+                  <button
+                    onClick={togglePlay}
+                    className="w-16 h-16 sm:w-20 sm:h-20 bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all flex items-center justify-center text-purple-600 p-4 group"
+                  >
+                    {isPlaying ? (
+                      <Pause className="w-8 h-8 sm:w-10 sm:h-10 group-hover:scale-110 transition-transform" />
+                    ) : (
+                      <Play className="w-8 h-8 sm:w-10 sm:h-10 group-hover:scale-110 transition-transform" />
+                    )}
+                  </button>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm sm:text-base font-medium text-gray-700 min-w-[4rem] sm:min-w-[5rem]">
+                        {formatTime(currentTime)}
+                      </span>
+                      <div className="flex-1 h-2 sm:h-3 bg-purple-200/50 rounded-full group cursor-pointer overflow-hidden">
+                        <input
+                          type="range"
+                          min="0"
+                          max={duration || 0}
+                          value={currentTime}
+                          onChange={handleSeek}
+                          className="w-full h-full bg-transparent appearance-none cursor-pointer range-lg:range-md accent-purple-600 hover:accent-purple-500 transition-all"
+                          style={{
+                            background: `linear-gradient(to right, #8b5cf6 0%, #8b5cf6 ${((currentTime / duration) * 100) || 0}%, #e0e7ff ${((currentTime / duration) * 100) || 0}%, #e0e7ff 100%)`
+                          }}
+                        />
+                      </div>
+                      <span className="text-sm sm:text-base font-medium text-gray-700 min-w-[4rem] sm:min-w-[5rem]">
+                        {formatTime(duration)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Volume2 className="w-6 h-6 text-purple-600 flex-shrink-0" />
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={volume}
+                    onChange={handleVolumeChange}
+                    className="w-full h-2 sm:h-3 bg-purple-200/50 rounded-full accent-purple-600 hover:accent-purple-500 transition-all"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* 📄 Description */}
           <div className="bg-white/90 backdrop-blur-xl p-6 sm:p-8 lg:p-12 rounded-3xl shadow-2xl border border-gray-200/50">
@@ -297,6 +449,7 @@ export default function BookDetail() {
           )}
         </div>
       </div>
+
 
       {/* ⭐ REVIEWS SECTION */}
       <div className="max-w-6xl mx-auto space-y-8 lg:space-y-12 px-4">
@@ -477,6 +630,7 @@ export default function BookDetail() {
           )}
         </div>
       </div>
+
     </div>
   )
 }
