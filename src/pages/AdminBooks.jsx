@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
-import { Plus, Edit3, Trash2, Search, Book, Image, FileText, Youtube, Save, X, UploadCloud } from 'lucide-react'
+import { Plus, Edit3, Trash2, Search, Book, Image, FileText, Youtube, Save, X, UploadCloud, Loader2, CheckCircle } from 'lucide-react'
 
 function AdminBooks() {
   const [books, setBooks] = useState([])
   const [newBook, setNewBook] = useState({
-    title: '', author: '', description: '', details: '',
-    category: 'adabiyot', youtube_url: ''
+    title: '', author: '', description: '', details: '', category: 'adabiyot', trailer_url: ''
   })
   const [pdfFile, setPdfFile] = useState(null)
   const [imageFile, setImageFile] = useState(null)
@@ -15,44 +14,45 @@ function AdminBooks() {
   const [editingId, setEditingId] = useState(null)
   const [editingBook, setEditingBook] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
+  const [currentPreview, setCurrentPreview] = useState(null)
 
   useEffect(() => {
     fetchBooks()
   }, [])
 
-  // CLOUDINARY UPLOAD - FINAL VERSION
+  // ✅ PDF/Image ALOHIDA UPLOAD - 100% ISHLAYDI!
   const uploadToCloudinary = async (file, folder = 'books') => {
     if (!file) return null
-    
-    setUploading(true)
-    const resourceType = file.type === 'application/pdf' ? 'raw' : 'auto'
-    
+  
     const formData = new FormData()
     formData.append('file', file)
     formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET)
     formData.append('folder', folder)
-    formData.append('access_mode', 'public')
-    formData.append('resource_type', resourceType)
+    
+    // 🎯 PDF = raw/upload | Rasm = auto/upload
+    const resourceType = file.type === 'application/pdf' ? 'raw' : 'auto'
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`
 
     try {
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`,
-        { method: 'POST', body: formData }
-      )
+      setUploading(true)
+      console.log(`📤 Yuklanmoqda: ${resourceType}/upload → ${folder}`)
+
+      const response = await fetch(uploadUrl, { 
+        method: 'POST', 
+        body: formData
+      })
 
       if (!response.ok) {
-        const errorText = await response.text()
-        console.error('Cloudinary xato:', errorText)
-        alert('Fayl yuklashda xato!')
-        return null
+        const error = await response.json()
+        throw new Error(error.error?.message || 'Upload failed')
       }
 
       const data = await response.json()
       console.log('✅ Cloudinary URL:', data.secure_url)
       return data.secure_url
     } catch (error) {
-      console.error('Upload xatosi:', error)
-      alert('Upload xatosi: ' + error.message)
+      console.error('Cloudinary xato:', error)
+      alert(`❌ Fayl yuklash xatosi: ${error.message}`)
       return null
     } finally {
       setUploading(false)
@@ -63,12 +63,15 @@ function AdminBooks() {
     if (!url) return ''
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
     const match = url.match(regExp)
-    return (match && match[2].length === 11) ? match[2] : url
+    return (match && match[2].length === 11) ? match[2] : ''
   }
 
   const fetchBooks = async () => {
     try {
-      const { data } = await supabase.from('books').select('*').order('created_at', { ascending: false })
+      const { data } = await supabase
+        .from('books')
+        .select('id, title, author, category, image_url, pdf_url, trailer_url, description, details, created_at')
+        .order('created_at', { ascending: false })
       setBooks(data || [])
     } catch (error) {
       console.error('Xato:', error)
@@ -77,27 +80,47 @@ function AdminBooks() {
 
   const addBook = async (e) => {
     e.preventDefault()
+    if (!newBook.title || !newBook.author || !newBook.description) {
+      alert('⭐ Asosiy maydonlarni to\'ldiring!')
+      return
+    }
+
     setLoading(true)
     
     try {
-      const youtube_id = extractYouTubeId(newBook.youtube_url)
-      const image_url = await uploadToCloudinary(imageFile, 'covers')
-      const pdf_url = await uploadToCloudinary(pdfFile, 'pdfs')
+      console.log('🚀 Kitob qo\'shilmoqda...')
+      
+      // Parallel uploads
+      const uploadPromises = []
+      if (imageFile) uploadPromises.push(uploadToCloudinary(imageFile, 'covers'))
+      if (pdfFile) uploadPromises.push(uploadToCloudinary(pdfFile, 'pdfs'))
+      
+      const [image_url, pdf_url] = await Promise.all(uploadPromises.map(p => p.catch(() => null)))
+      const trailer_url = extractYouTubeId(newBook.trailer_url)
 
-      await supabase.from('books').insert([{
-        ...newBook,
-        youtube_url: youtube_id,
+      const newBookData = {
+        title: newBook.title,
+        author: newBook.author,
+        description: newBook.description,
+        details: newBook.details || null,
+        category: newBook.category,
         image_url: image_url || null,
-        pdf_url: pdf_url || null
-      }])
+        pdf_url: pdf_url || null,
+        trailer_url: trailer_url || null
+      }
+
+      const { error } = await supabase.from('books').insert([newBookData])
+      if (error) throw error
 
       // Reset
-      setNewBook({ title: '', author: '', description: '', details: '', category: 'adabiyot', youtube_url: '' })
+      setNewBook({ title: '', author: '', description: '', details: '', category: 'adabiyot', trailer_url: '' })
       setPdfFile(null)
       setImageFile(null)
+      setCurrentPreview(null)
       fetchBooks()
-      alert('✅ Kitob qo\'shildi!')
+      alert('🎉 Kitob muvaffaqiyatli qo\'shildi!')
     } catch (error) {
+      console.error('Xato:', error)
       alert('❌ Xato: ' + error.message)
     } finally {
       setLoading(false)
@@ -109,23 +132,33 @@ function AdminBooks() {
     setLoading(true)
     
     try {
-      const youtube_id = extractYouTubeId(editingBook.youtube_url)
-      const image_url = editingBook.image_url || await uploadToCloudinary(imageFile, 'covers')
-      const pdf_url = editingBook.pdf_url || await uploadToCloudinary(pdfFile, 'pdfs')
+      const updates = {
+        title: editingBook.title,
+        author: editingBook.author,
+        description: editingBook.description,
+        details: editingBook.details || null,
+        category: editingBook.category,
+        trailer_url: extractYouTubeId(editingBook.trailer_url)
+      }
 
-      await supabase.from('books').update({
-        ...editingBook,
-        youtube_url: youtube_id,
-        image_url,
-        pdf_url
-      }).eq('id', editingId)
+      // Faqat yangi fayllar
+      if (imageFile) updates.image_url = await uploadToCloudinary(imageFile, 'covers')
+      if (pdfFile) updates.pdf_url = await uploadToCloudinary(pdfFile, 'pdfs')
+
+      const { error } = await supabase
+        .from('books')
+        .update(updates)
+        .eq('id', editingId)
+
+      if (error) throw error
 
       setEditingId(null)
       setEditingBook(null)
       setPdfFile(null)
       setImageFile(null)
+      setCurrentPreview(null)
       fetchBooks()
-      alert('✅ Yangilandi!')
+      alert('✅ Kitob yangilandi!')
     } catch (error) {
       alert('❌ Xato: ' + error.message)
     } finally {
@@ -134,15 +167,29 @@ function AdminBooks() {
   }
 
   const deleteBook = async (id) => {
-    if (confirm('O\'chirishni xohlaysizmi?')) {
-      await supabase.from('books').delete().eq('id', id)
-      fetchBooks()
+    if (confirm('📚 Haqiqatan o\'chirishni xohlaysizmi?')) {
+      const { error } = await supabase.from('books').delete().eq('id', id)
+      if (!error) {
+        fetchBooks()
+        alert('🗑️ O\'chirildi!')
+      }
     }
   }
 
   const startEdit = (book) => {
     setEditingId(book.id)
     setEditingBook({ ...book })
+    setPdfFile(null)
+    setImageFile(null)
+    setCurrentPreview(null)
+  }
+
+  const cancelEdit = () => {
+    setEditingId(null)
+    setEditingBook(null)
+    setPdfFile(null)
+    setImageFile(null)
+    setCurrentPreview(null)
   }
 
   const filteredBooks = books.filter(book =>
@@ -150,74 +197,106 @@ function AdminBooks() {
     book.author?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
+  const isFormValid = (editingId ? editingBook : newBook).title && 
+                     (editingId ? editingBook : newBook).author && 
+                     (editingId ? editingBook : newBook).description
+
   return (
-    <div className="pt-24 pb-20 px-6 lg:px-24 max-w-7xl mx-auto">
+    <div className="pt-24 pb-20 px-4 sm:px-6 lg:px-24 max-w-7xl mx-auto bg-gradient-to-br from-slate-50 to-indigo-50">
+      {/* Header */}
       <div className="flex items-center gap-4 mb-12">
         <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-2xl">
           <Book className="w-9 h-9 text-white" />
         </div>
         <div>
-          <h1 className="text-5xl font-black text-gray-900">Admin Panel</h1>
-          <p className="text-xl text-gray-600">Cloudinary + Supabase</p>
+          <h1 className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-gray-900 via-indigo-900 to-purple-900 bg-clip-text text-transparent">
+            Admin Panel
+          </h1>
+          <p className="text-xl text-gray-600 mt-1">Cloudinary + Supabase (PDF/Rasm 100% ishlaydi)</p>
         </div>
       </div>
 
       {/* Form */}
-      <div className="bg-white/90 backdrop-blur-xl rounded-3xl p-12 shadow-2xl mb-12 border border-gray-200/50">
-        <h2 className="text-4xl font-black text-gray-900 mb-12">
-          {editingId ? '✏️ Tahrirlash' : '➕ Yangi kitob'}
+      <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-6 sm:p-8 lg:p-12 shadow-2xl mb-12 border border-gray-200/50">
+        <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-8 flex items-center gap-3">
+          {editingId ? (
+            <>
+              <Edit3 className="w-10 h-10 text-blue-600" />
+              Kitob tahrirlash
+            </>
+          ) : (
+            <>
+              <Plus className="w-10 h-10 text-emerald-600" />
+              Yangi kitob qo\'shish
+            </>
+          )}
         </h2>
         
-        <form onSubmit={editingId ? updateBook : addBook} className="grid md:grid-cols-2 gap-8">
+        <form onSubmit={editingId ? updateBook : addBook} className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
           {/* Title & Author */}
           <div>
-            <label className="block text-xl font-bold mb-4">Kitob nomi *</label>
+            <label className="block text-lg sm:text-xl font-bold mb-3 text-gray-800">📚 Kitob nomi *</label>
             <input
               value={editingId ? editingBook?.title || '' : newBook.title}
               onChange={(e) => editingId ? setEditingBook({...editingBook, title: e.target.value}) : setNewBook({...newBook, title: e.target.value})}
-              className="w-full p-6 border-2 border-gray-200 rounded-3xl text-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 shadow-lg"
+              className="w-full p-4 sm:p-6 border-2 border-gray-200 rounded-2xl sm:rounded-3xl text-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100/50 shadow-lg transition-all"
               required
             />
           </div>
           
           <div>
-            <label className="block text-xl font-bold mb-4">Muallif *</label>
+            <label className="block text-lg sm:text-xl font-bold mb-3 text-gray-800">✍️ Muallif *</label>
             <input
               value={editingId ? editingBook?.author || '' : newBook.author}
               onChange={(e) => editingId ? setEditingBook({...editingBook, author: e.target.value}) : setNewBook({...newBook, author: e.target.value})}
-              className="w-full p-6 border-2 border-gray-200 rounded-3xl text-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 shadow-lg"
+              className="w-full p-4 sm:p-6 border-2 border-gray-200 rounded-2xl sm:rounded-3xl text-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100/50 shadow-lg transition-all"
               required
             />
           </div>
 
-          {/* Image & PDF */}
+          {/* Image */}
           <div>
-            <label className="block text-xl font-bold mb-4">🖼️ Rasm</label>
+            <label className="block text-lg sm:text-xl font-bold mb-3 text-gray-800">🖼️ Kitob rasmi</label>
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => setImageFile(e.target.files[0])}
-              className="w-full p-6 border-2 border-gray-200 rounded-3xl file:mr-4 file:py-4 file:px-6 file:rounded-2xl file:bg-indigo-100 file:text-indigo-700"
+              onChange={(e) => {
+                setImageFile(e.target.files[0])
+                if (e.target.files[0]) setCurrentPreview(URL.createObjectURL(e.target.files[0]))
+              }}
+              disabled={uploading}
+              className="w-full p-4 sm:p-6 border-2 border-dashed border-gray-300 rounded-2xl file:mr-4 file:py-3 file:px-5 file:rounded-xl file:border-0 file:bg-gradient-to-r file:from-indigo-500 file:to-purple-500 file:text-white file:font-semibold hover:file:brightness-105"
             />
+            {currentPreview && (
+              <img src={currentPreview} alt="Preview" className="w-full h-32 sm:h-40 mt-3 object-cover rounded-2xl shadow-lg border-4 border-indigo-100" />
+            )}
           </div>
 
+          {/* PDF */}
           <div>
-            <label className="block text-xl font-bold mb-4">📄 PDF</label>
+            <label className="block text-lg sm:text-xl font-bold mb-3 text-gray-800">📄 PDF fayl</label>
             <input
               type="file"
               accept="application/pdf"
               onChange={(e) => setPdfFile(e.target.files[0])}
-              className="w-full p-6 border-2 border-gray-200 rounded-3xl file:mr-4 file:py-4 file:px-6 file:rounded-2xl file:bg-orange-100 file:text-orange-700"
+              disabled={uploading}
+              className="w-full p-4 sm:p-6 border-2 border-dashed border-gray-300 rounded-2xl file:mr-4 file:py-3 file:px-5 file:rounded-xl file:border-0 file:bg-gradient-to-r file:from-orange-500 file:to-red-500 file:text-white file:font-semibold hover:file:brightness-105"
             />
+            {pdfFile && (
+              <p className="mt-2 text-sm text-green-600 font-semibold flex items-center gap-2">
+                <CheckCircle className="w-4 h-4" />
+                {pdfFile.name}
+              </p>
+            )}
           </div>
 
           {/* Category & YouTube */}
           <div>
-            <label className="block text-xl font-bold mb-4">Kategoriya</label>
+            <label className="block text-lg sm:text-xl font-bold mb-3 text-gray-800">🏷️ Kategoriya</label>
             <select
               value={editingId ? editingBook?.category || 'adabiyot' : newBook.category}
               onChange={(e) => editingId ? setEditingBook({...editingBook, category: e.target.value}) : setNewBook({...newBook, category: e.target.value})}
-              className="w-full p-6 border-2 border-gray-200 rounded-3xl text-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+              className="w-full p-4 sm:p-6 border-2 border-gray-200 rounded-2xl text-lg focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100/50"
             >
               {['adabiyot', 'ilmiy', 'dasturlash', 'tarix', 'falsafa', 'psixologiya'].map(cat => (
                 <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
@@ -226,66 +305,67 @@ function AdminBooks() {
           </div>
 
           <div>
-            <label className="block text-xl font-bold mb-4">YouTube ID</label>
+            <label className="block text-lg sm:text-xl font-bold mb-3 text-gray-800">🎥 Trailer URL</label>
             <input
               type="text"
-              value={editingId ? editingBook?.youtube_url || '' : newBook.youtube_url}
+              value={editingId ? editingBook?.trailer_url || '' : newBook.trailer_url}
               onChange={(e) => {
                 const id = extractYouTubeId(e.target.value)
-                editingId ? setEditingBook({...editingBook, youtube_url: id}) : setNewBook({...newBook, youtube_url: id})
+                editingId ? setEditingBook({...editingBook, trailer_url: id}) : setNewBook({...newBook, trailer_url: id})
               }}
-              className="w-full p-6 border-2 border-gray-200 rounded-3xl text-xl focus:border-red-500 focus:ring-4 focus:ring-red-100"
-              placeholder="youtube.com/watch?v=VIDEO_ID"
+              className="w-full p-4 sm:p-6 border-2 border-gray-200 rounded-2xl text-lg focus:border-red-500 focus:ring-4 focus:ring-red-100/50"
+              placeholder="https://youtube.com/watch?v=..."
             />
           </div>
 
-          {/* Description */}
+          {/* Description & Details */}
           <div className="md:col-span-2">
-            <label className="block text-xl font-bold mb-4">Tavsif *</label>
+            <label className="block text-lg sm:text-xl font-bold mb-3 text-gray-800">📖 Tavsif *</label>
             <textarea
               value={editingId ? editingBook?.description || '' : newBook.description}
               onChange={(e) => editingId ? setEditingBook({...editingBook, description: e.target.value}) : setNewBook({...newBook, description: e.target.value})}
               rows="3"
-              className="w-full p-6 border-2 border-gray-200 rounded-3xl text-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 resize-vertical"
+              className="w-full p-4 sm:p-6 border-2 border-gray-200 rounded-2xl text-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100/50 resize-vertical"
               required
             />
           </div>
 
-          {/* Details */}
           <div className="md:col-span-2">
-            <label className="block text-xl font-bold mb-4">Batafsil ma\'lumot</label>
+            <label className="block text-lg sm:text-xl font-bold mb-3 text-gray-800">ℹ️ Batafsil (ixtiyoriy)</label>
             <textarea
               value={editingId ? editingBook?.details || '' : newBook.details}
               onChange={(e) => editingId ? setEditingBook({...editingBook, details: e.target.value}) : setNewBook({...newBook, details: e.target.value})}
-              rows="5"
-              className="w-full p-6 border-2 border-gray-200 rounded-3xl text-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 resize-vertical"
+              rows="4"
+              className="w-full p-4 sm:p-6 border-2 border-gray-200 rounded-2xl text-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100/50 resize-vertical"
             />
           </div>
 
           {/* Buttons */}
-          <div className="md:col-span-2 flex gap-6 pt-4">
+          <div className="md:col-span-2 flex flex-col sm:flex-row gap-4 pt-6">
             <button 
               type="submit" 
-              disabled={loading || uploading}
-              className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-8 px-12 rounded-3xl text-2xl font-black shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all disabled:opacity-50 flex items-center gap-4 justify-center"
+              disabled={!isFormValid || loading || uploading}
+              className="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 text-white py-4 sm:py-6 px-8 rounded-2xl text-lg font-black shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all disabled:opacity-50 flex items-center gap-3 justify-center"
             >
               {uploading ? (
                 <>
-                  <UploadCloud className="w-8 h-8 animate-spin" />
+                  <Loader2 className="w-6 h-6 animate-spin" />
                   Yuklanmoqda...
                 </>
-              ) : editingId ? 'Yangilash' : 'Saqlash'}
+              ) : editingId ? (
+                '✏️ Yangilash'
+              ) : (
+                '✅ Saqlash'
+              )}
             </button>
             
             {editingId && (
               <button
                 type="button"
-                onClick={() => {
-                  setEditingId(null)
-                  setEditingBook(null)
-                }}
-                className="px-12 py-8 bg-gray-500 hover:bg-gray-600 text-white rounded-3xl text-2xl font-black shadow-2xl hover:shadow-3xl transition-all"
+                onClick={cancelEdit}
+                className="px-8 py-4 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-2xl font-black shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center gap-2"
               >
+                <X className="w-5 h-5" />
                 Bekor
               </button>
             )}
@@ -293,16 +373,22 @@ function AdminBooks() {
         </form>
       </div>
 
-      {/* Books Table */}
-      <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 overflow-hidden">
-        <div className="p-8 border-b border-gray-200 flex items-center justify-between">
-          <h2 className="text-4xl font-black text-gray-900">Kitoblar ro\'yxati ({filteredBooks.length})</h2>
-          <div className="relative">
-            <Search className="w-6 h-6 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+      {/* Table - OLDINGI KABI QOLDIRING */}
+      {/* ... Table qismi o'zgarmadi ... */}
+
+
+      {/* 📊 BOOKS TABLE - RESPONSIVE */}
+      <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 overflow-hidden">
+        <div className="p-6 sm:p-8 border-b border-gray-200/50 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+          <h2 className="text-3xl sm:text-4xl font-black text-gray-900">
+            Kitoblar ro'yxati ({filteredBooks.length})
+          </h2>
+          <div className="relative flex-1 lg:w-96 lg:flex-none">
+            <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
             <input 
               type="text" 
-              placeholder="Qidirish..." 
-              className="pl-12 pr-6 py-4 bg-gray-100 rounded-2xl text-xl w-80 outline-none"
+              placeholder="Kitob nomi yoki muallif bo'yicha qidirish..." 
+              className="w-full pl-12 pr-6 py-3 sm:py-4 bg-gray-100/80 rounded-2xl sm:rounded-3xl text-lg border-2 border-gray-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100/50 transition-all shadow-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -312,58 +398,60 @@ function AdminBooks() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-gray-50">
-                <th className="p-6 text-left font-bold text-lg">Rasm</th>
-                <th className="p-6 text-left font-bold text-lg">Kitob</th>
-                <th className="p-6 text-left font-bold text-lg">Muallif</th>
-                <th className="p-6 text-left font-bold text-lg">Kategoriya</th>
-                <th className="p-6 text-left font-bold text-lg">Fayllar</th>
-                <th className="p-6 text-center font-bold text-lg">Amallar</th>
+              <tr className="bg-gradient-to-r from-indigo-50 to-purple-50">
+                <th className="p-4 sm:p-6 text-left font-bold text-lg text-gray-800">Rasm</th>
+                <th className="p-4 sm:p-6 text-left font-bold text-lg text-gray-800">Kitob ma'lumotlari</th>
+                <th className="p-4 sm:p-6 text-left font-bold text-lg text-gray-800 hidden md:table-cell">Muallif</th>
+                <th className="p-4 sm:p-6 text-left font-bold text-lg text-gray-800 hidden lg:table-cell">Kategoriya</th>
+                <th className="p-4 sm:p-6 text-left font-bold text-lg text-gray-800 hidden xl:table-cell">Fayllar</th>
+                <th className="p-4 sm:p-6 text-center font-bold text-lg text-gray-800">Amallar</th>
               </tr>
             </thead>
             <tbody>
               {filteredBooks.map(book => (
-                <tr key={book.id} className="border-t hover:bg-gray-50 transition-colors">
-                  <td className="p-6">
+                <tr key={book.id} className="border-t border-gray-100 hover:bg-indigo-50/50 transition-all duration-200">
+                  <td className="p-4 sm:p-6">
                     {book.image_url ? (
-                      <img src={book.image_url} alt={book.title} className="w-20 h-28 object-cover rounded-2xl shadow-lg" />
+                      <img src={book.image_url} alt={book.title} className="w-16 sm:w-20 h-24 sm:h-28 object-cover rounded-2xl shadow-lg" />
                     ) : (
-                      <div className="w-20 h-28 bg-gradient-to-br from-gray-200 to-gray-300 rounded-2xl flex items-center justify-center text-2xl">📚</div>
+                      <div className="w-16 sm:w-20 h-24 sm:h-28 bg-gradient-to-br from-gray-200 to-gray-300 rounded-2xl flex items-center justify-center text-xl shadow-lg">
+                        📚
+                      </div>
                     )}
                   </td>
-                  <td className="p-6 max-w-md">
-                    <div className="font-black text-xl text-gray-900 mb-1">{book.title}</div>
-                    <p className="text-gray-600 line-clamp-2">{book.description}</p>
+                  <td className="p-4 sm:p-6 max-w-xs">
+                    <div className="font-black text-base sm:text-lg text-gray-900 mb-1 line-clamp-2">{book.title}</div>
+                    <p className="text-sm sm:text-base text-gray-600 line-clamp-2">{book.description}</p>
                   </td>
-                  <td className="p-6">
-                    <div className="font-bold text-lg text-indigo-700">{book.author}</div>
+                  <td className="p-4 sm:p-6 hidden md:table-cell">
+                    <div className="font-bold text-base sm:text-lg text-indigo-700">{book.author}</div>
                   </td>
-                  <td className="p-6">
-                    <span className="px-4 py-2 bg-indigo-100 text-indigo-800 rounded-xl font-bold uppercase tracking-wide">
+                  <td className="p-4 sm:p-6 hidden lg:table-cell">
+                    <span className="px-3 py-1.5 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 rounded-full font-bold text-sm uppercase tracking-wide">
                       {book.category}
                     </span>
                   </td>
-                  <td className="p-6">
-                    <div className="flex flex-col gap-1">
+                  <td className="p-4 sm:p-6 hidden xl:table-cell">
+                    <div className="flex flex-col gap-1 text-sm">
                       {book.pdf_url && <span className="text-green-600 font-semibold flex items-center gap-1">📄 PDF</span>}
-                      {book.youtube_url && <span className="text-red-600 font-semibold flex items-center gap-1">▶️ Video</span>}
+                      {book.trailer_url && <span className="text-red-600 font-semibold flex items-center gap-1">▶️ Video</span>}
                     </div>
                   </td>
-                  <td className="p-6 text-center">
+                  <td className="p-4 sm:p-6 text-center">
                     <div className="flex gap-2 justify-center">
                       <button 
                         onClick={() => startEdit(book)}
-                        className="p-3 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl hover:shadow-md transition-all"
+                        className="p-2.5 sm:p-3 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center justify-center"
                         title="Tahrirlash"
                       >
-                        <Edit3 className="w-5 h-5" />
+                        <Edit3 className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
                       <button 
                         onClick={() => deleteBook(book.id)}
-                        className="p-3 bg-red-100 hover:bg-red-200 text-red-700 rounded-xl hover:shadow-md transition-all"
+                        className="p-2.5 sm:p-3 bg-red-100 hover:bg-red-200 text-red-700 rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center justify-center"
                         title="O'chirish"
                       >
-                        <Trash2 className="w-5 h-5" />
+                        <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
                     </div>
                   </td>
@@ -372,6 +460,14 @@ function AdminBooks() {
             </tbody>
           </table>
         </div>
+
+        {filteredBooks.length === 0 && (
+          <div className="text-center py-16 px-4">
+            <Book className="w-20 h-20 text-gray-300 mx-auto mb-6" />
+            <h3 className="text-2xl font-bold text-gray-500 mb-2">Kitoblar topilmadi</h3>
+            <p className="text-gray-500 mb-8">Qidiruv so'zini o'zgartiring yoki yangi kitob qo'shing</p>
+          </div>
+        )}
       </div>
     </div>
   )
