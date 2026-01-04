@@ -30,7 +30,7 @@ function BookCard({ book, delay = 0 }) {
 
   // Cloudinary image URL
   const getImageUrl = (imageUrl) => {
-    if (!imageUrl) return `https://via.placeholder.com/300x400/6b7280/f8fafc?text=${encodeURIComponent(book.title.slice(0,15))}`
+    if (!imageUrl) return `https://placehold.co/300x400/fff/234?text=${encodeURIComponent(book.title.slice(0,15))}`
     
     // Cloudinarydan kelgan URL ni optimize qilish
     if (imageUrl.includes('cloudinary.com')) {
