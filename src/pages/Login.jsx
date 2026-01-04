@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'  // ✅ Qo'shildi
 import { supabase } from '../supabaseClient'
 import { Mail, Lock, BookOpen, Loader2 } from 'lucide-react'
 
@@ -7,6 +8,7 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [mode, setMode] = useState('signin') // 'signin' yoki 'signup'
+  const navigate = useNavigate()  // ✅ HashRouter navigatsiyasi
 
   const handleAuth = async (e) => {
     e.preventDefault()
@@ -14,16 +16,30 @@ export default function Login() {
 
     try {
       if (mode === 'signin') {
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        const { error } = await supabase.auth.signInWithPassword({ 
+          email, 
+          password 
+        })
         if (error) throw error
+        
+        // ✅ HashRouter uchun to'g'ri redirect
+        navigate('/', { replace: true })
       } else {
-        const { error } = await supabase.auth.signUp({ email, password })
+        const { error } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            emailRedirectTo: window.location.origin + '/'
+          }
+        })
         if (error) throw error
+        
         alert('✅ Email tasdiqlash yuborildi! Spam papkani tekshiring.')
+        setMode('signin')  // Signin rejimiga o'tkazish
         return
       }
-      window.location.href = '/'
     } catch (error) {
+      console.error('Auth xatosi:', error)
       alert('❌ ' + error.message)
     } finally {
       setLoading(false)
@@ -89,11 +105,11 @@ export default function Login() {
             )}
           </button>
 
-          <div className="text-center">
+          <div className="text-center pt-4 border-t border-gray-200">
             <button
               type="button"
               onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
-              className="text-indigo-600 hover:text-indigo-700 font-semibold text-lg transition-colors"
+              className="text-indigo-600 hover:text-indigo-700 font-semibold text-lg transition-colors w-full py-2"
             >
               {mode === 'signin' 
                 ? 'Yangi hisob yarating →' 

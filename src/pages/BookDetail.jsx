@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { 
   Download, Heart, Share2, BookOpen, Tag, Star, Send, User, Loader2, 
@@ -8,6 +8,7 @@ import {
 
 export default function BookDetail() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [book, setBook] = useState(null)
   const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
@@ -20,11 +21,12 @@ export default function BookDetail() {
   const [submittingReview, setSubmittingReview] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
 
-  // YouTube ID extractor
+  // ✅ YOUUBE ID - BETTER ERROR HANDLING
   const getYouTubeId = (url) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url?.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
+    if (!url) return null
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+    const match = url.match(regExp)
+    return (match && match[2].length === 11) ? match[2] : null
   }
 
   useEffect(() => {
@@ -76,11 +78,15 @@ export default function BookDetail() {
     }
   }
 
+  const goToLogin = () => {
+    navigate('/login', { replace: true })
+  }
+
   const submitReview = async (e) => {
     e.preventDefault()
     if (!user) {
       alert('Taassurot qoldirish uchun tizimga kiring!')
-      window.location.href = '/login'
+      goToLogin()
       return
     }
 
@@ -142,17 +148,25 @@ export default function BookDetail() {
         <div className="text-center bg-white rounded-3xl p-12 shadow-2xl max-w-md w-full mx-4">
           <BookOpen className="w-24 h-24 text-gray-300 mx-auto mb-8 animate-pulse" />
           <h1 className="text-3xl font-black text-gray-500 mb-6">Kitob topilmadi</h1>
-          <a href="/" className="inline-flex items-center gap-2 bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-indigo-700 transition-all">
+          <button 
+            onClick={() => navigate('/')}
+            className="inline-flex items-center gap-2 bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-indigo-700 transition-all"
+          >
             ← Bosh sahifaga
-          </a>
+          </button>
         </div>
       </div>
     )
   }
 
+  const youtubeId = getYouTubeId(book.trailer_url)
+  
+  const hasValidTrailer = youtubeId && book.trailer_url
+  console.log(hasValidTrailer);
+
   return (
     <div className="min-h-screen pt-16 pb-16 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">
-      {/* 🏷️ HEADER - FULL RESPONSIVE */}
+      {/* 🏷️ HEADER */}
       <div className="text-center mb-12 lg:mb-20">
         <div className="inline-flex items-center gap-2 sm:gap-3 bg-emerald-100/80 px-6 py-3 sm:px-8 sm:py-4 rounded-2xl sm:rounded-3xl mx-auto mb-6 sm:mb-8 backdrop-blur-xl shadow-lg max-w-max">
           <Tag className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-700" />
@@ -190,9 +204,8 @@ export default function BookDetail() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 mb-16 lg:mb-24 max-w-6xl mx-auto">
-        {/* 📚 CHAP: Cover + Actions - RESPONSIVE */}
+        {/* 📚 CHAP: Cover + Actions */}
         <div className="space-y-6 lg:space-y-8 lg:sticky lg:top-24 lg:h-fit">
-          {/* Cover Image */}
           <div className="group relative bg-white/90 backdrop-blur-xl p-4 sm:p-6 lg:p-8 rounded-3xl shadow-2xl border border-gray-200/50 overflow-hidden">
             {book.image_url ? (
               <div className="aspect-[3/4] w-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl group-hover:shadow-2xl transition-all">
@@ -210,7 +223,6 @@ export default function BookDetail() {
             )}
           </div>
 
-          {/* 🎯 ACTION BUTTONS - MOBILE FRIENDLY */}
           <div className="space-y-4">
             <button
               onClick={downloadPDF}
@@ -245,27 +257,33 @@ export default function BookDetail() {
           </div>
         </div>
 
-        {/* 📝 O'NG: Content - RESPONSIVE */}
+        {/* 📝 O'NG: Content */}
         <div className="space-y-6 lg:space-y-8 lg:pt-4">
-          {/* 🎥 YOUTUBE TRAILER - RESPONSIVE */}
-            <div className="bg-white/90 backdrop-blur-xl p-6 sm:p-8 lg:p-12 rounded-3xl shadow-2xl border border-gray-200/50">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-6 flex items-center gap-3 sm:gap-4 text-gray-900">
-                <Play className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 text-red-600 flex-shrink-0" />
+          {/* 🎥 YOUTUBE TRAILER - THUMBNAIL + CLICK (DNS FIX) */}
+            <a 
+              href={`https://youtube.com/watch?v=${youtubeId}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="block bg-white/90 backdrop-blur-xl p-6 sm:p-8 lg:p-12 rounded-3xl shadow-2xl border border-gray-200/50 hover:shadow-3xl hover:-translate-y-2 transition-all group overflow-hidden"
+            >
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-6 flex items-center gap-3 sm:gap-4 text-gray-900 group-hover:text-red-600 transition-colors">
+                <Play className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 text-red-600 flex-shrink-0 group-hover:scale-110 transition-transform" />
                 Rasmiy treyler
               </h2>
-              <div className="aspect-video w-full bg-black/10 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border-4 border-gray-200/50">
-                <iframe
-                  src={`https://www.youtube.com/embed/${getYouTubeId(book.trailer_url)}?rel=0`}
-                  title={`${book.title} - Rasmiy treyler`}
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  referrerPolicy="origin"
-                  allowFullScreen
-                  className="w-full h-full rounded-2xl"
-                  loading="lazy"
+              <div className="relative aspect-video w-full bg-black/10 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl">
+                <img 
+                  src={`https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`} 
+                  alt="Trailer thumbnail"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
+                <div className="absolute inset-0 bg-gradient-to-r from-red-600/30 to-red-800/30 flex items-center justify-center">
+                  <Play className="w-24 h-24 text-white drop-shadow-2xl group-hover:scale-110 transition-all" />
+                </div>
+                <div className="absolute bottom-4 left-4 bg-black/70 text-white px-4 py-2 rounded-xl text-sm font-bold">
+                  YANGI Oyna ochish →
+                </div>
               </div>
-            </div>
+            </a>
 
           {/* 📄 Description */}
           <div className="bg-white/90 backdrop-blur-xl p-6 sm:p-8 lg:p-12 rounded-3xl shadow-2xl border border-gray-200/50">
@@ -278,7 +296,6 @@ export default function BookDetail() {
             </div>
           </div>
 
-          {/* 📋 Details (ixtiyoriy) */}
           {book.details && (
             <div className="bg-white/90 backdrop-blur-xl p-6 sm:p-8 lg:p-12 rounded-3xl shadow-2xl border border-gray-200/50">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-6 text-gray-900">Batafsil ma'lumot</h2>
@@ -290,7 +307,7 @@ export default function BookDetail() {
         </div>
       </div>
 
-      {/* ⭐⭐⭐ REVIEWS SECTION - FULL RESPONSIVE */}
+      {/* ⭐ REVIEWS SECTION */}
       <div className="max-w-6xl mx-auto space-y-8 lg:space-y-12 px-4">
         <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
           <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-amber-400 via-orange-400 to-yellow-400 rounded-2xl sm:rounded-3xl flex items-center justify-center shadow-2xl p-2 sm:p-3 lg:p-4 flex-shrink-0">
@@ -304,7 +321,7 @@ export default function BookDetail() {
           </div>
         </div>
 
-        {/* ➕ ADD REVIEW FORM - RESPONSIVE */}
+        {/* ➕ ADD REVIEW FORM */}
         <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50/60 backdrop-blur-xl p-6 sm:p-8 lg:p-12 rounded-3xl shadow-2xl border border-amber-200/50 mb-8 lg:mb-12">
           <button
             onClick={() => setShowReviewForm(!showReviewForm)}
@@ -316,7 +333,6 @@ export default function BookDetail() {
 
           {showReviewForm && user ? (
             <form onSubmit={submitReview} className="space-y-6 max-w-4xl mx-auto">
-              {/* ⭐ Rating Stars */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 p-6 sm:p-8 bg-white/60 backdrop-blur-xl rounded-3xl shadow-xl border border-amber-200/30">
                 <label className="text-xl sm:text-2xl font-black text-gray-800 whitespace-nowrap flex-shrink-0 min-w-[5rem] sm:min-w-[8rem]">
                   Reytingingiz:
@@ -334,9 +350,6 @@ export default function BookDetail() {
                       }`}
                     >
                       <Star className="w-7 h-7 sm:w-9 sm:h-9 lg:w-10 lg:h-10" />
-                      <span className="absolute -top-10 left-1/2 -translate-x-1/2 text-xs font-bold text-white bg-black/80 px-2 py-1 rounded-xl opacity-0 group-hover/like:opacity-100 transition-all whitespace-nowrap sm:block hidden">
-                        {i + 1} yulduz
-                      </span>
                     </button>
                   ))}
                 </div>
@@ -346,7 +359,6 @@ export default function BookDetail() {
                 </div>
               </div>
 
-              {/* 💬 Comment */}
               <div className="relative">
                 <textarea
                   value={comment}
@@ -364,7 +376,6 @@ export default function BookDetail() {
                 </div>
               </div>
 
-              {/* 🚀 Submit */}
               <button
                 type="submit"
                 disabled={submittingReview || (!comment.trim() && rating < 5)}
@@ -390,17 +401,17 @@ export default function BookDetail() {
               <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-md mx-auto">
                 Taassurot qoldirish uchun hisobingizga kiring
               </p>
-              <a 
-                href="/login" 
+              <button 
+                onClick={goToLogin}
                 className="inline-flex items-center gap-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 sm:px-12 py-5 sm:py-6 rounded-2xl sm:rounded-3xl font-bold text-lg sm:text-xl shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all"
               >
                 Tizimga kirish →
-              </a>
+              </button>
             </div>
           ) : null}
         </div>
 
-        {/* 📋 REVIEWS LIST - RESPONSIVE */}
+        {/* 📋 REVIEWS LIST */}
         <div className="space-y-6 lg:space-y-8">
           {reviews.length === 0 ? (
             <div className="text-center py-20 sm:py-32 bg-white/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/30 px-4">
@@ -424,7 +435,6 @@ export default function BookDetail() {
                 className="group bg-white/90 backdrop-blur-xl p-6 sm:p-8 lg:p-12 rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-500 border border-gray-200/30 hover:border-amber-200/50 hover:-translate-y-2"
               >
                 <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 lg:gap-8 mb-6 lg:mb-8">
-                  {/* ⭐ Stars */}
                   <div className="flex items-center gap-1 p-3 sm:p-4 lg:p-5 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl sm:rounded-3xl shadow-xl mt-1 flex-shrink-0 order-2 lg:order-1">
                     {[...Array(5)].map((_, i) => (
                       <Star 
@@ -438,7 +448,6 @@ export default function BookDetail() {
                     ))}
                   </div>
 
-                  {/* 👤 User Info */}
                   <div className="flex-1 min-w-0 order-1 lg:order-2">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
                       <div className="w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 rounded-2xl sm:rounded-3xl flex items-center justify-center shadow-2xl flex-shrink-0 group-hover:scale-110 transition-transform">
@@ -465,7 +474,6 @@ export default function BookDetail() {
                   </div>
                 </div>
 
-                {/* 💬 Comment */}
                 {review.comment && (
                   <div className="ml-0 lg:ml-20 pl-0 lg:pl-8 border-l-0 lg:border-l-4 border-amber-300/60">
                     <p className="text-lg sm:text-2xl lg:text-3xl text-gray-700 leading-relaxed font-medium italic group-hover:text-gray-900 transition-colors">
