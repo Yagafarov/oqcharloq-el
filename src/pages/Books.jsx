@@ -79,7 +79,7 @@ export default function Books() {
       {/* Hero */}
       <div className="text-center mb-12 sm:mb-16 lg:mb-20 px-2">
         <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black bg-linear-to-r from-gray-900 via-indigo-900 to-purple-900 bg-clip-text text-transparent mb-4 sm:mb-6">
-          Kitoblar kutubxonasi
+          48-umumiy o‘rta ta'lim maktabi kutubxonasi
         </h1>
         <p className="text-lg sm:text-xl lg:text-2xl text-gray-600 max-w-2xl mx-auto">
           Bepul kitoblar yuklab oling va o&apos;qing. {books.length} ta kitob
