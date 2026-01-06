@@ -13,12 +13,15 @@ export default function BookDetail() {
   const [book, setBook] = useState(null)
   const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
+
   const [user, setUser] = useState(null)
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState('')
+  const [displayName, setDisplayName] = useState('') // ⭐ Guest uchun ism
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [submittingReview, setSubmittingReview] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
+
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -36,15 +39,16 @@ export default function BookDetail() {
 
     const updateTime = () => setCurrentTime(audio.currentTime)
     const updateDuration = () => setDuration(audio.duration)
+    const handleEnded = () => setIsPlaying(false)
 
     audio.addEventListener('timeupdate', updateTime)
     audio.addEventListener('loadedmetadata', updateDuration)
-    audio.addEventListener('ended', () => setIsPlaying(false))
+    audio.addEventListener('ended', handleEnded)
 
     return () => {
       audio.removeEventListener('timeupdate', updateTime)
       audio.removeEventListener('loadedmetadata', updateDuration)
-      audio.removeEventListener('ended', () => setIsPlaying(false))
+      audio.removeEventListener('ended', handleEnded)
     }
   }, [])
 
@@ -70,7 +74,8 @@ export default function BookDetail() {
 
       const { data: reviewsData } = await supabase
         .from('reviews')
-        .select('id, rating, comment, created_at')
+        // ⭐ author_name va user_id ham olamiz
+        .select('id, rating, comment, created_at, user_id')
         .eq('book_id', id)
         .order('created_at', { ascending: false })
 
@@ -92,7 +97,7 @@ export default function BookDetail() {
     }
   }
 
-  // Audio controls...
+  // Audio controls
   const togglePlay = () => {
     const audio = audioRef.current
     if (!audio) return
@@ -121,6 +126,7 @@ export default function BookDetail() {
   }
 
   const formatTime = (time) => {
+    if (!time || Number.isNaN(time)) return '0:00'
     const minutes = Math.floor(time / 60)
     const seconds = Math.floor(time % 60)
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
@@ -139,26 +145,35 @@ export default function BookDetail() {
   }
   const toggleLike = () => setIsLiked(!isLiked)
 
+  // ⭐ ENDI GUEST HAM YOZA OLADI
   const submitReview = async (e) => {
     e.preventDefault()
-    if (!user) {
-      alert('Taassurot qoldirish uchun tizimga kiring!')
-      goToLogin()
+
+    if (!comment.trim() && rating === 5) {
+      alert('Hech bo‘lmasa izoh yozing yoki reytingni o‘zgartiring.')
       return
     }
+
+    // Ko‘rinadigan ism:
+    const nameToSave =
+      user?.email ||
+      displayName.trim() ||
+      'Mehmon'
 
     setSubmittingReview(true)
     try {
       const { error } = await supabase.from('reviews').insert([{
         book_id: id,
         rating,
-        comment: comment.trim()
+        comment: comment.trim(),
+        user_id: user ? user.id : null,            // ekranda ko‘rinadigan ism
       }])
 
       if (error) throw error
 
       setComment('')
       setRating(5)
+      setDisplayName('')
       setShowReviewForm(false)
       fetchBookAndReviews()
       alert('✅ Taassurotingiz saqlandi!')
@@ -436,7 +451,7 @@ export default function BookDetail() {
         </div>
 
         {/* ⭐ REVIEWS SECTION */}
-        <div className="space-y-6 lg:space-y-12">
+        <div className="space-y-6 lg:space-y-12 mt-12 lg:mt-16">
           <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
             <div className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-linear-to-br from-amber-400 to-yellow-400 rounded-2xl flex items-center justify-center shadow-2xl p-2 sm:p-3">
               <Star className="w-6 h-6 sm:w-8 text-white drop-shadow-lg" />
@@ -445,11 +460,13 @@ export default function BookDetail() {
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black bg-linear-to-r from-gray-900 to-amber-900 bg-clip-text text-transparent mb-1 px-1">
                 Foydalanuvchi taassurotlari
               </h2>
-              <p className="text-lg sm:text-xl text-gray-600 font-semibold">{reviews.length} ta haqiqiy fikr</p>
+              <p className="text-lg sm:text-xl text-gray-600 font-semibold">
+                {reviews.length} ta haqiqiy fikr
+              </p>
             </div>
           </div>
 
-          {/* Add Review Form */}
+          {/* ADD REVIEW FORM – endi user bo‘lishi shart emas */}
           <div className="bg-linear-to-r from-amber-50 to-yellow-50/60 backdrop-blur-xl p-4 sm:p-6 lg:p-6 rounded-3xl shadow-2xl border border-amber-200/50 mb-8 lg:mb-8">
             <button
               onClick={() => setShowReviewForm(!showReviewForm)}
@@ -459,10 +476,46 @@ export default function BookDetail() {
               <span>{showReviewForm ? 'Bekor qilish' : 'Yangi taassurot'}</span>
             </button>
 
-            {showReviewForm && user ? (
+            {showReviewForm && (
               <form onSubmit={submitReview} className="space-y-4 sm:space-y-6 max-w-2xl mx-auto">
+                {/* Agar user kirmagan bo‘lsa – info + optional login */}
+                {!user && (
+                  <div className="mb-2 p-3 sm:p-4 rounded-2xl bg-white/70 border border-amber-200/70 text-xs sm:text-sm text-gray-700 flex flex-col sm:flex-row gap-2 sm:items-center">
+                    <span className="font-semibold text-amber-700">
+                      Hisobsiz ham mehmon sifatida taassurot qoldirishingiz mumkin.
+                    </span>
+                    <button
+                      type="button"
+                      onClick={goToLogin}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-linear-to-r from-indigo-600 to-purple-600 text-white text-xs sm:text-sm font-semibold shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all"
+                    >
+                      Tizimga kirish (ixtiyoriy)
+                    </button>
+                  </div>
+                )}
+
+                {/* Guest uchun ism maydoni */}
+                {/* {!user && (
+                  <div>
+                    <label className="block text-base sm:text-lg font-bold mb-1 text-gray-800">
+                      Ismingiz (ixtiyoriy)
+                    </label>
+                    <input
+                      type="text"
+                      value={displayName}
+                      maxLength={50}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      placeholder="Masalan: Ali, Guest123 ..."
+                      className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-2xl text-sm sm:text-base focus:border-amber-500 focus:ring-2 focus:ring-amber-200/50 bg-white/80 shadow-md"
+                    />
+                  </div>
+                )} */}
+
+                {/* Reyting */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 sm:p-6 bg-white/70 backdrop-blur-xl rounded-2xl shadow-xl border border-amber-200/30">
-                  <label className="text-lg font-bold text-gray-800 whitespace-nowrap min-w-24">Reyting:</label>
+                  <label className="text-lg font-bold text-gray-800 whitespace-nowrap min-w-24">
+                    Reyting:
+                  </label>
                   <div className="flex gap-2 flex-wrap">
                     {[...Array(5)].map((_, i) => (
                       <button
@@ -485,6 +538,7 @@ export default function BookDetail() {
                   </div>
                 </div>
 
+                {/* Izoh */}
                 <div className="relative">
                   <textarea
                     value={comment}
@@ -495,7 +549,11 @@ export default function BookDetail() {
                     className="w-full p-4 sm:p-6 border-2 border-gray-200/50 rounded-2xl text-base sm:text-lg focus:border-amber-500 focus:ring-2 focus:ring-amber-200/50 resize-vertical shadow-xl backdrop-blur-xl bg-white/80"
                   />
                   <div className="absolute bottom-3 right-4 sm:bottom-4 sm:right-6 flex items-center gap-1 bg-white/90 px-3 py-1 rounded-xl shadow-lg">
-                    <span className={`text-sm font-semibold ${comment.length > 900 ? 'text-red-500' : 'text-gray-600'}`}>
+                    <span
+                      className={`text-sm font-semibold ${
+                        comment.length > 900 ? 'text-red-500' : 'text-gray-600'
+                      }`}
+                    >
                       {comment.length}/1000
                     </span>
                   </div>
@@ -503,7 +561,7 @@ export default function BookDetail() {
 
                 <button
                   type="submit"
-                  disabled={submittingReview || (!comment.trim() && rating < 5)}
+                  disabled={submittingReview || (!comment.trim() && rating === 5)}
                   className="w-full bg-linear-to-r from-amber-600 to-yellow-600 text-white py-4 sm:py-6 px-6 sm:px-8 rounded-2xl text-lg sm:text-xl font-bold shadow-3xl hover:shadow-4xl hover:-translate-y-1 transition-all disabled:opacity-50 flex items-center gap-2 justify-center"
                 >
                   {submittingReview ? (
@@ -519,21 +577,7 @@ export default function BookDetail() {
                   )}
                 </button>
               </form>
-            ) : showReviewForm ? (
-              <div className="text-center py-12 px-4">
-                <User className="w-16 h-16 sm:w-20 sm:h-20 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-700 mb-3">Tizimga kiring!</h3>
-                <p className="text-base sm:text-lg text-gray-600 mb-6 max-w-md mx-auto">
-                  Taassurot qoldirish uchun hisobingizga kiring
-                </p>
-                <button
-                  onClick={goToLogin}
-                  className="inline-flex items-center gap-2 bg-linear-to-r from-indigo-600 to-purple-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-bold text-base sm:text-lg shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all"
-                >
-                  Tizimga kirish →
-                </button>
-              </div>
-            ) : null}
+            )}
           </div>
 
           {/* Reviews List */}
@@ -580,11 +624,22 @@ export default function BookDetail() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-lg sm:text-xl font-bold text-gray-900 truncate group-hover:text-amber-600 mb-1">
-                            Foydalanuvchi
+                            {'Foydalanuvchi'}
                           </p>
                           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500 font-semibold">
-                            <span>{new Date(review.created_at).toLocaleDateString('uz-UZ', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                            <span>
+                              {new Date(review.created_at).toLocaleDateString('uz-UZ', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric'
+                              })}
+                            </span>
                             <span className="sm:ml-4">{review.rating}/5 yulduz</span>
+                            {review.user_id === null && (
+                              <span className="px-2 py-1 rounded-full bg-gray-100 text-[10px] sm:text-xs text-gray-500">
+                                Mehmon
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
